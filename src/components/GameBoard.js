@@ -93,7 +93,7 @@ const GameBoard = () => {
   return (
     <div className="ui center aligned  middle aligned stackable grid">
       <div className="two column row">
-        <div className="two wide column">
+        <div className=" three wide mobile two wide computer column">
           <div className="ui header">
             <Button
               text={buttonText}
@@ -103,7 +103,7 @@ const GameBoard = () => {
             />
           </div>
         </div>
-        <div className="six wide column">
+        <div className="eight wide tablet six wide computer column">
           <Dices values={diceValues} onClick={handleSelection} />
         </div>
       </div>
