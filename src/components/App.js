@@ -1,9 +1,12 @@
-import React from 'react'
+import React from "react";
+import GameBoard from "./GameBoard";
 
 const App = () => {
   return (
-    <div>App</div>
-  )
-}
+    <div className="ui container segment">
+      <GameBoard />
+    </div>
+  );
+};
 
-export default App
+export default App;
