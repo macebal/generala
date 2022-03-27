@@ -1,8 +1,12 @@
 import React from "react";
 
-const Button = ({ text, onClick }) => {
+const Button = ({ text, onClick, isEnabled }) => {
   return (
-    <button className="big ui primary button" onClick={onClick}>
+    <button
+      className="big ui primary button"
+      onClick={onClick}
+      disabled={!isEnabled}
+    >
       {text}
     </button>
   );
