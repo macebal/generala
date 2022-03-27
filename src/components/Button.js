@@ -1,9 +1,9 @@
 import React from "react";
 
-const Button = ({ text, onClick, isEnabled }) => {
+const Button = ({ text, onClick, isEnabled, color }) => {
   return (
     <button
-      className="big ui primary button"
+      className={`big ui ${color} button`}
       onClick={onClick}
       disabled={!isEnabled}
     >
@@ -14,6 +14,8 @@ const Button = ({ text, onClick, isEnabled }) => {
 
 Button.defaultProps = {
   text: "Button",
+  isEnabled: true,
+  color: "blue",
 };
 
 export default Button;

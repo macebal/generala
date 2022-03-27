@@ -71,6 +71,7 @@ const GameBoard = () => {
       setRemainingRolls(remainingRolls - 1);
     } else {
       setRemainingRolls(3);
+      setDiceValues(getDefaultDiceValues([1, 1, 1, 1, 1]));
     }
   };
 
@@ -98,6 +99,7 @@ const GameBoard = () => {
               text={buttonText}
               onClick={handleRoll}
               isEnabled={isEnabled}
+              color={buttonText === "Siguiente" ? "green" : "blue"}
             />
           </div>
         </div>
