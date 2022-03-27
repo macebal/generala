@@ -20,10 +20,10 @@ const GameBoard = () => {
   const [rollTime, setRollTime] = useState(0); //remaining time for the roll animation
   const [buttonText, setButtonText] = useState("Tirar");
   const [isEnabled, setIsEnabled] = useState(true); //if the button is clickable
+  const [remainingRolls, setRemainingRolls] = useState(3);
 
   useEffect(() => {
     if (rollTime <= 0) {
-      setButtonText("Tirar");
       setIsEnabled(true);
       return;
     }
@@ -49,37 +49,71 @@ const GameBoard = () => {
     };
   }, [rollTime, diceValues]);
 
+  useEffect(() => {
+    if (rollTime > 0) {
+      setButtonText("Tirando");
+    } else {
+      switch (remainingRolls) {
+        case 0:
+          setButtonText("Siguiente");
+          break;
+        default:
+          setButtonText("Tirar");
+          break;
+      }
+    }
+  }, [remainingRolls, rollTime]);
+
   const handleRoll = () => {
-    setRollTime(1000);
-    setButtonText("Tirando");
-    setIsEnabled(false);
+    if (remainingRolls > 0) {
+      setRollTime(1000);
+      setIsEnabled(false);
+      setRemainingRolls(remainingRolls - 1);
+    } else {
+      setRemainingRolls(3);
+    }
   };
 
   const handleSelection = diceId => {
-    let dices = diceValues.filter(dice => dice.id !== diceId); //The dices that are *not* the selected one
-    let dice = diceValues.filter(dice => dice.id === diceId)[0];
+    //This is done to avoid selection of dice while the rolling animation is happening
+    if (isEnabled) {
+      let dices = diceValues.filter(dice => dice.id !== diceId); //The dices that are *not* the selected one
+      let dice = diceValues.filter(dice => dice.id === diceId)[0];
 
-    dice = {
-      ...dice,
-      selected: !dice.selected,
-    };
+      dice = {
+        ...dice,
+        selected: !dice.selected,
+      };
 
-    console.log(dice);
-    setDiceValues([...dices, dice].sort((a, b) => (a.id > b.id ? 1 : -1))); //sort the array by the dices "id" key to ensure proper dice order
+      setDiceValues([...dices, dice].sort((a, b) => (a.id > b.id ? 1 : -1))); //sort the array by the dices "id" key to ensure proper dice order
+    }
   };
 
   return (
     <div className="ui center aligned  middle aligned stackable grid">
       <div className="two column row">
         <div className="two wide column">
-          <Button
-            text={buttonText}
-            onClick={handleRoll}
-            isEnabled={isEnabled}
-          />
+          <div className="ui header">
+            <Button
+              text={buttonText}
+              onClick={handleRoll}
+              isEnabled={isEnabled}
+            />
+          </div>
         </div>
         <div className="six wide column">
           <Dices values={diceValues} onClick={handleSelection} />
+        </div>
+      </div>
+      <div className="one column row">
+        <div className="column">
+          <div className="ui header">
+            {remainingRolls === 0
+              ? `No quedan tiros`
+              : remainingRolls === 1
+              ? `Queda 1 tiro`
+              : `Quedan ${remainingRolls} tiros`}
+          </div>
         </div>
       </div>
     </div>
