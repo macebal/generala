@@ -3,9 +3,11 @@ import GameBoard from "./GameBoard";
 
 const App = () => {
   return (
-    <div className="ui container segment">
-      <GameBoard />
-    </div>
+    <React.StrictMode>
+      <div className="ui container segment">
+        <GameBoard />
+      </div>
+    </React.StrictMode>
   );
 };
 

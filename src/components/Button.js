@@ -1,7 +1,11 @@
 import React from "react";
 
-const Button = ({ text }) => {
-  return <button className="big ui primary button">{text}</button>;
+const Button = ({ text, onClick }) => {
+  return (
+    <button className="big ui primary button" onClick={onClick}>
+      {text}
+    </button>
+  );
 };
 
 Button.defaultProps = {
