@@ -31,7 +31,7 @@ const getNumberScores = diceValues => {
 };
 
 const countEquals = diceValues => {
-  //this function returns an array with te different combinations of equal dices
+  //this function returns an array with the different combinations of equal dices
   //For example:
   //[1,3,1,4,1] -> [3] (for the three "1"s)
   //[3,3,3,4,4] -> [3, 2] (three "3"s and the two "4"s)
