@@ -1,0 +1,22 @@
+{
+  "escalera": {
+    "servido": 25,
+    "armado": 20
+  },
+  "full": {
+    "servido": 35,
+    "armado": 30
+  },
+  "póker": {
+    "servido": 45,
+    "armado": 40
+  },
+  "generala": {
+    "armado": 50,
+    "servido": 50
+  },
+  "generala doble": {
+    "armado": 100,
+    "servido": 100
+  }
+}
