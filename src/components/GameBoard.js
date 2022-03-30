@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import Button from "./Button";
 import Dices from "./Dices";
 import _ from "lodash";
+import getPossibleScores from "../util/scores";
+import Scores from "./Scores";
 
 const getDefaultDiceState = values => {
   return _.chain(values)
@@ -24,6 +26,7 @@ const GameBoard = () => {
   const [buttonText, setButtonText] = useState("Tirar");
   const [isEnabled, setIsEnabled] = useState(true); //if the button is clickable
   const [remainingRolls, setRemainingRolls] = useState(3);
+  const [possibleScores, setPossibleScores] = useState([]);
 
   useEffect(() => {
     if (rollTime <= 0) {
@@ -69,6 +72,13 @@ const GameBoard = () => {
     }
   }, [remainingRolls, rollTime]);
 
+  useEffect(() => {
+    if (remainingRolls < 3) {
+      const scores = getPossibleScores(_.map(diceValues, "value"));
+      setPossibleScores(scores);
+    }
+  }, [remainingRolls, diceValues]);
+
   const handleRoll = () => {
     if (remainingRolls > 0) {
       setRollTime(1000);
@@ -110,6 +120,13 @@ const GameBoard = () => {
           <Dices values={diceValues} onClick={handleSelection} />
         </div>
       </div>
+      {possibleScores.length > 0 && (
+        <div className="one column row">
+          <div className="column">
+            <Scores scores={possibleScores} isEnabled={isEnabled} />
+          </div>
+        </div>
+      )}
       <div className="one column row">
         <div className="column">
           <div className="ui header">

@@ -23,7 +23,7 @@ const getNamedGameScores = (diceValues, rollNumber, hasGenerala) => {
     .countBy()
     .toArray()
     .filter(val => val >= 2)
-    .sortBy((a, b) => a - b)
+    .orderBy("desc")
     .value();
 
   let name = null;
