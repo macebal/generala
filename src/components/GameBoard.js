@@ -73,10 +73,9 @@ const GameBoard = () => {
   }, [remainingRolls, rollTime]);
 
   useEffect(() => {
-    if (remainingRolls < 3) {
-      const scores = getPossibleScores(_.map(diceValues, "value"));
-      setPossibleScores(scores);
-    }
+    //TODO: pass the currentRoll value and the "has generala" param
+    const scores = getPossibleScores(_.map(diceValues, "value"));
+    setPossibleScores(scores);
   }, [remainingRolls, diceValues]);
 
   const handleRoll = () => {

@@ -1,4 +1,4 @@
-import * as gameScores from "../gameScores.json";
+import { GAME_SCORES } from "./gameData";
 import _ from "lodash";
 
 const getNumberScores = diceValues => {
@@ -38,23 +38,25 @@ const getNamedGameScores = (diceValues, rollNumber, hasGenerala) => {
       _.isEqual(sortedDiceValues, [2, 3, 4, 5, 6]) ||
       _.isEqual(sortedDiceValues, _.sortBy([3, 4, 5, 6, 1]))
     ) {
-      name = "escalera";
+      name = "E"; //escalera
     }
   } else if (frequencyArray.length === 1) {
     //If there is one element and it is either 4 or 5 it has to be Poker and Generala respectively
     if (frequencyArray[0] === 4) {
-      name = "póker";
+      name = "P"; //poker
     } else if (frequencyArray[0] === 5) {
-      name = hasGenerala ? "generala doble" : "generala";
+      //DG: Doble Generala
+      //G: Generala
+      name = hasGenerala ? "DG" : "G";
     }
   } else if (frequencyArray.length === 2) {
     if (frequencyArray[0] === 3 && frequencyArray[1] === 2) {
-      name = "full";
+      name = "F"; //full
     }
   }
 
   if (name) {
-    score = gameScores[name][mode];
+    score = GAME_SCORES[name][mode];
     return [{ name, score, mode }]; //inside an array to be consistent with getNumberScores
   } else {
     return [];

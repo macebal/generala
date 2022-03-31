@@ -3,7 +3,7 @@ import PlayerScore from "./PlayerScore";
 
 const ScoreBoard = () => {
   return (
-    <table className="ui selectable celled unstackable center aligned table">
+    <table className="ui selectable celled unstackable center aligned very compact table">
       <thead>
         <tr>
           <th></th>

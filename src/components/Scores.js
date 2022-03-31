@@ -1,6 +1,7 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React from "react";
-import _ from "lodash";
+import _, { isInteger } from "lodash";
+import { GAME_NAMES } from "../util/gameData";
 
 const Scores = ({ scores, isEnabled }) => {
   return (
@@ -8,13 +9,14 @@ const Scores = ({ scores, isEnabled }) => {
       {_.chain(scores)
         .orderBy("score", "desc")
         .map(score => {
+          const scoreName = GAME_NAMES[score.name].name;
           return (
             <a
               className={`ui blue ${!isEnabled ? "disabled" : ""} label`}
               href="#"
               key={score.name}
             >
-              {_.upperFirst(score.name)}
+              {scoreName}
               <div className="detail">{score.score} pts</div>
             </a>
           );
