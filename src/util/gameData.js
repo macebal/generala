@@ -40,6 +40,9 @@ const GAME_SCORES = {
   },
 };
 
+//The order in which the different scores should be rendered across the scoreboard
+const GAME_ORDER = ["1", "2", "3", "4", "5", "6", "E", "F", "P", "G", "DG"];
+
 const INITIAL_SCORE = {
   1: 0,
   2: 0,
@@ -54,4 +57,4 @@ const INITIAL_SCORE = {
   DG: 0,
 };
 
-export { GAME_NAMES, GAME_SCORES, INITIAL_SCORE };
+export { GAME_NAMES, GAME_SCORES, GAME_ORDER, INITIAL_SCORE };

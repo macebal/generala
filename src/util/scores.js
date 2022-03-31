@@ -1,4 +1,4 @@
-import { GAME_SCORES } from "./gameData";
+import { GAME_ORDER, GAME_SCORES } from "./gameData";
 import _ from "lodash";
 
 const getNumberScores = diceValues => {
@@ -63,14 +63,45 @@ const getNamedGameScores = (diceValues, rollNumber, hasGenerala) => {
   }
 };
 
+const hasScoreInGame = (gameName, playerData) => {
+  //returns true if there is a score already in gameName (or if it's crossed)
+  return !_.chain(playerData)
+    .pickBy(val => val !== 0)
+    .pick(gameName)
+    .isEmpty()
+    .value();
+};
+
+const getGameToCross = playerData => {
+  //returns an object array with the gameName of the game of the highest value
+  //(since the GAME_ORDER constant is ordered increasingly in value, this game is the first counting from the right)
+  let gameName = "";
+
+  GAME_ORDER.forEach(game =>
+    !hasScoreInGame(game, playerData) ? (gameName = game) : null
+  );
+
+  const gameToCross = { name: gameName, score: -1 }; //-1 signifies that it is crossed further down the line (see Score component)
+  return [gameToCross];
+};
+
 const getPossibleScores = (
   diceValues = [],
-  rollNumber = 1,
-  hasGenerala = false
+  remainingRolls = 3,
+  playerData = {}
 ) => {
-  return _.concat(
+  const hasGenerala = hasScoreInGame("G", playerData);
+  const rollNumber = 3 - remainingRolls;
+
+  const possibleGames = _.concat(
     getNumberScores(diceValues),
-    getNamedGameScores(diceValues, rollNumber, hasGenerala)
+    getNamedGameScores(diceValues, rollNumber, hasGenerala),
+    getGameToCross(playerData)
+  );
+
+  return _.filter(
+    possibleGames,
+    game => !hasScoreInGame(game.name, playerData)
   );
 };
 

@@ -18,7 +18,7 @@ const getDefaultDiceState = values => {
     .value();
 };
 
-const GameBoard = () => {
+const GameBoard = ({ onScoreClick, currentPlayer, playerData }) => {
   const [diceValues, setDiceValues] = useState(
     getDefaultDiceState([1, 1, 1, 1, 1])
   );
@@ -74,9 +74,14 @@ const GameBoard = () => {
 
   useEffect(() => {
     //TODO: pass the currentRoll value and the "has generala" param
-    const scores = getPossibleScores(_.map(diceValues, "value"));
+    const scores = getPossibleScores(
+      _.map(diceValues, "value"),
+      remainingRolls,
+      playerData
+    );
+    //TODO: Add game to cross to scores object for rendering in red
     setPossibleScores(scores);
-  }, [remainingRolls, diceValues]);
+  }, [remainingRolls, diceValues, playerData]);
 
   const handleRoll = () => {
     if (remainingRolls > 0) {
@@ -119,10 +124,14 @@ const GameBoard = () => {
           <Dices values={diceValues} onClick={handleSelection} />
         </div>
       </div>
-      {possibleScores.length > 0 && (
+      {possibleScores.length > 0 && remainingRolls < 3 && (
         <div className="one column row">
           <div className="column">
-            <Scores scores={possibleScores} isEnabled={isEnabled} />
+            <Scores
+              scores={possibleScores}
+              isEnabled={isEnabled}
+              onScoreClick={onScoreClick}
+            />
           </div>
         </div>
       )}
