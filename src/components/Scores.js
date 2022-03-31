@@ -16,8 +16,7 @@ const Scores = ({ scores, isEnabled, onScoreClick }) => {
                 className={`ui red ${!isEnabled ? "disabled" : ""} label`}
                 href="#"
                 key="tachar"
-                //TODO:Add the current player to this call
-                onClick={() => onScoreClick("Player 1", shortName, score)}
+                onClick={() => onScoreClick(shortName, score)}
               >
                 {`Tachar ${name}`}
                 <div className="detail">
@@ -31,8 +30,7 @@ const Scores = ({ scores, isEnabled, onScoreClick }) => {
                 className={`ui blue ${!isEnabled ? "disabled" : ""} label`}
                 href="#"
                 key={shortName}
-                //TODO:Add the current player to this call
-                onClick={() => onScoreClick("Player 1", shortName, score)}
+                onClick={() => onScoreClick(shortName, score)}
               >
                 {name}
                 <div className="detail">{`${score} pts`}</div>

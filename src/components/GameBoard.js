@@ -18,7 +18,7 @@ const getDefaultDiceState = values => {
     .value();
 };
 
-const GameBoard = ({ onScoreClick, currentPlayer, playerData }) => {
+const GameBoard = ({ onScoreClick, playerScores }) => {
   const [diceValues, setDiceValues] = useState(
     getDefaultDiceState([1, 1, 1, 1, 1])
   );
@@ -73,15 +73,14 @@ const GameBoard = ({ onScoreClick, currentPlayer, playerData }) => {
   }, [remainingRolls, rollTime]);
 
   useEffect(() => {
-    //TODO: pass the currentRoll value and the "has generala" param
     const scores = getPossibleScores(
       _.map(diceValues, "value"),
       remainingRolls,
-      playerData
+      playerScores
     );
-    //TODO: Add game to cross to scores object for rendering in red
+
     setPossibleScores(scores);
-  }, [remainingRolls, diceValues, playerData]);
+  }, [remainingRolls, diceValues, playerScores]);
 
   const handleRoll = () => {
     if (remainingRolls > 0) {

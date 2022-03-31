@@ -4,21 +4,25 @@ import GameBoard from "./GameBoard";
 import ScoreBoard from "./ScoreBoard";
 
 const INITIAL_STATE = {
-  "Player 1": INITIAL_SCORE,
-  "Player 2": INITIAL_SCORE,
+  0: { name: "Player 1", scores: INITIAL_SCORE },
+  1: { name: "Player 2", scores: INITIAL_SCORE },
 };
 
 const App = () => {
   const [gameState, setGameState] = useState(INITIAL_STATE);
-  const [currentPlayer, setCurrentPlayer] = useState(
+  const [currentPlayerId, setCurrentPlayerId] = useState(
     Object.keys(INITIAL_STATE)[0]
   );
 
-  const handleScoreClick = (playerName, gameName, score) => {
-    const playerData = gameState[playerName];
-    const newPlayerData = { ...playerData, [gameName]: score };
-    setGameState({ ...gameState, [playerName]: newPlayerData });
-  };
+  const playerData = gameState[currentPlayerId];
+
+  const handleScoreClick = (gameName, score) => {
+    const newScores = { ...playerData.scores, [gameName]: score };
+    setGameState({
+      ...gameState,
+      [currentPlayerId]: { ...playerData, scores: newScores },
+    });
+  }; //...playerData, score: newPlayerData
 
   return (
     <React.StrictMode>
@@ -27,8 +31,7 @@ const App = () => {
       </div>
       <div className="ui container segment">
         <GameBoard
-          currentPlayer={currentPlayer}
-          playerData={gameState[currentPlayer]}
+          playerScores={playerData.scores}
           onScoreClick={handleScoreClick}
         />
       </div>

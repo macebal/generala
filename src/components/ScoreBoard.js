@@ -24,8 +24,8 @@ const ScoreBoard = ({ gameState }) => {
         </tr>
       </thead>
       <tbody>
-        {_.map(gameState, (scores, key) => {
-          return <PlayerScore key={key} name={key} scores={scores} />;
+        {_.map(gameState, (playerData, id) => {
+          return <PlayerScore key={id} playerData={playerData} />;
         })}
       </tbody>
     </table>

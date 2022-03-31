@@ -1,7 +1,8 @@
 import React from "react";
 import { GAME_ORDER } from "../util/gameData";
 
-const PlayerScore = ({ name, scores }) => {
+const PlayerScore = ({ playerData }) => {
+  const { name, scores } = playerData;
   return (
     <tr className="left marked green">
       <td>{name}</td>
