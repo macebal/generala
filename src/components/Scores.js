@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React from "react";
-import _, { isInteger } from "lodash";
+import _ from "lodash";
 import { GAME_NAMES } from "../util/gameData";
 
 const Scores = ({ scores, isEnabled }) => {
