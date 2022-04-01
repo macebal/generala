@@ -7,7 +7,15 @@ const PlayerScore = ({ playerData }) => {
     <tr className="left marked green">
       <td>{name}</td>
       {GAME_ORDER.map(game => {
-        return <td key={game}>{scores[game]}</td>;
+        return (
+          <td key={game}>
+            {scores[game] === -1 ? (
+              <i className="times icon"></i>
+            ) : (
+              scores[game]
+            )}
+          </td>
+        );
       })}
     </tr>
   );

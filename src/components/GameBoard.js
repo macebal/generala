@@ -18,7 +18,7 @@ const getDefaultDiceState = values => {
     .value();
 };
 
-const GameBoard = ({ onScoreClick, playerScores }) => {
+const GameBoard = ({ onScoreClick, playerScores, playerId }) => {
   const [diceValues, setDiceValues] = useState(
     getDefaultDiceState([1, 1, 1, 1, 1])
   );
@@ -30,7 +30,6 @@ const GameBoard = ({ onScoreClick, playerScores }) => {
 
   useEffect(() => {
     if (rollTime <= 0) {
-      setIsEnabled(true);
       return;
     }
 
@@ -58,6 +57,24 @@ const GameBoard = ({ onScoreClick, playerScores }) => {
   }, [rollTime, diceValues]);
 
   useEffect(() => {
+    const scores = getPossibleScores(
+      _.map(diceValues, "value"),
+      remainingRolls,
+      playerScores
+    );
+
+    setPossibleScores(scores);
+  }, [remainingRolls, diceValues, playerScores]);
+
+  useEffect(() => {
+    //FIXME: Ni bien arranca no tiene que ser "Siguiente"
+    //FIXME: El turno debe terminar si seleccionan un score antes de hacer los 3 tiros
+    setIsEnabled(true);
+    setRemainingRolls(0);
+    setPossibleScores([]);
+  }, [playerId]);
+
+  useEffect(() => {
     if (rollTime > 0) {
       setButtonText("Tirando");
     } else {
@@ -67,20 +84,11 @@ const GameBoard = ({ onScoreClick, playerScores }) => {
           break;
         default:
           setButtonText("Tirar");
+          setIsEnabled(true);
           break;
       }
     }
-  }, [remainingRolls, rollTime]);
-
-  useEffect(() => {
-    const scores = getPossibleScores(
-      _.map(diceValues, "value"),
-      remainingRolls,
-      playerScores
-    );
-
-    setPossibleScores(scores);
-  }, [remainingRolls, diceValues, playerScores]);
+  }, [remainingRolls, rollTime, playerId]);
 
   const handleRoll = () => {
     if (remainingRolls > 0) {
@@ -128,7 +136,7 @@ const GameBoard = ({ onScoreClick, playerScores }) => {
           <div className="column">
             <Scores
               scores={possibleScores}
-              isEnabled={isEnabled}
+              isEnabled={rollTime === 0}
               onScoreClick={onScoreClick}
             />
           </div>
