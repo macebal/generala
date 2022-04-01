@@ -1,17 +1,21 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useReducer } from "react";
+import _ from "lodash";
+
 import Button from "./Button";
 import Dices from "./Dices";
-import _ from "lodash";
+
 import getPossibleScores from "../util/scores";
 import Scores from "./Scores";
+import diceReducer from "../reducers/diceReducer";
+import rollReducer from "../reducers/rollReducer";
 
-const getDefaultDiceState = values => {
+const setDiceValues = values => {
   return _.chain(values)
     .map((value, index) => {
       return {
         id: index,
         value: value,
-        selected: false,
+        isSelected: false,
       };
     })
     .mapKeys("id")
@@ -19,63 +23,56 @@ const getDefaultDiceState = values => {
 };
 
 const GameBoard = ({ onScoreClick, playerScores, playerId }) => {
-  const [diceValues, setDiceValues] = useState(
-    getDefaultDiceState([1, 1, 1, 1, 1])
+  const [diceState, diceDispatch] = useReducer(
+    diceReducer,
+    [1, 1, 1, 1, 1],
+    setDiceValues
   );
-  const [rollTime, setRollTime] = useState(0); //remaining time for the roll animation
+
+  const [rollState, rollDispatch] = useReducer(rollReducer, {
+    isRolling: false,
+    animationTimeLeft: 0,
+  });
+
   const [buttonText, setButtonText] = useState("Tirar");
   const [isEnabled, setIsEnabled] = useState(true); //if the button is clickable
   const [remainingRolls, setRemainingRolls] = useState(3);
   const [possibleScores, setPossibleScores] = useState([]);
 
   useEffect(() => {
-    if (rollTime <= 0) {
-      return;
-    }
+    if (!rollState.isRolling) return;
 
     const timer = setInterval(() => {
-      let newValues = _.clone(diceValues);
-
-      //Progressively modify the newValues array with a random number
-      //for each element, if it's not selected
-      _.forEach(newValues, (dice, id) => {
-        newValues = {
-          ...newValues,
-          [id]: {
-            ...dice,
-            value: dice.selected ? dice.value : Math.ceil(Math.random() * 6),
-          },
-        };
-      });
-      setDiceValues(newValues);
-      setRollTime(prevTime => prevTime - 50);
+      diceDispatch({ type: "RANDOMIZE_VALUES" });
+      rollDispatch({ type: "SUBSTRACT_ANIMATION_TIME", payload: 50 });
+      // setRollTime(prevTime => prevTime - 50);
     }, 50);
 
     return () => {
       clearInterval(timer);
     };
-  }, [rollTime, diceValues]);
+  }, [rollState]);
 
   useEffect(() => {
     const scores = getPossibleScores(
-      _.map(diceValues, "value"),
+      _.map(diceState, "value"),
       remainingRolls,
       playerScores
     );
 
     setPossibleScores(scores);
-  }, [remainingRolls, diceValues, playerScores]);
+  }, [remainingRolls, diceState, playerScores]);
+
+  // useEffect(() => {
+  //   //FIXME: Ni bien arranca no tiene que ser "Siguiente"
+  //   //FIXME: El turno debe terminar si seleccionan un score antes de hacer los 3 tiros
+  //   setIsEnabled(true);
+  //   setRemainingRolls(0);
+  //   setPossibleScores([]);
+  // }, [playerId]);
 
   useEffect(() => {
-    //FIXME: Ni bien arranca no tiene que ser "Siguiente"
-    //FIXME: El turno debe terminar si seleccionan un score antes de hacer los 3 tiros
-    setIsEnabled(true);
-    setRemainingRolls(0);
-    setPossibleScores([]);
-  }, [playerId]);
-
-  useEffect(() => {
-    if (rollTime > 0) {
+    if (rollState.isRolling) {
       setButtonText("Tirando");
     } else {
       switch (remainingRolls) {
@@ -88,29 +85,24 @@ const GameBoard = ({ onScoreClick, playerScores, playerId }) => {
           break;
       }
     }
-  }, [remainingRolls, rollTime, playerId]);
+  }, [remainingRolls, rollState, playerId]);
 
   const handleRoll = () => {
     if (remainingRolls > 0) {
-      setRollTime(1000);
+      // setRollTime(1000);
+      rollDispatch({ type: "SET_ANIMATION_DURATION", payload: 1000 });
       setIsEnabled(false);
       setRemainingRolls(remainingRolls - 1);
     } else {
       setRemainingRolls(3);
-      setDiceValues(getDefaultDiceState([1, 1, 1, 1, 1]));
+      setDiceValues([1, 1, 1, 1, 1]);
     }
   };
 
   const handleSelection = diceId => {
     // this is done to avoid selection of dice while the rolling animation is happening or before the first roll
     if (isEnabled && remainingRolls < 3) {
-      let dice = diceValues[diceId];
-
-      dice = {
-        ...dice,
-        selected: !dice.selected,
-      };
-      setDiceValues({ ...diceValues, [diceId]: dice });
+      diceDispatch({ type: "TOGGLE_SELECTION", payload: diceId });
     }
   };
 
@@ -128,7 +120,7 @@ const GameBoard = ({ onScoreClick, playerScores, playerId }) => {
           </div>
         </div>
         <div className="eight wide tablet six wide computer column">
-          <Dices values={diceValues} onClick={handleSelection} />
+          <Dices values={diceState} onClick={handleSelection} />
         </div>
       </div>
       {possibleScores.length > 0 && remainingRolls < 3 && (
@@ -136,7 +128,7 @@ const GameBoard = ({ onScoreClick, playerScores, playerId }) => {
           <div className="column">
             <Scores
               scores={possibleScores}
-              isEnabled={rollTime === 0}
+              isEnabled={!rollState.isRolling}
               onScoreClick={onScoreClick}
             />
           </div>
