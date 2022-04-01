@@ -23,17 +23,14 @@ const setDiceValues = values => {
 };
 
 const GameBoard = ({ onScoreClick, playerScores, playerId }) => {
-  const [diceState, diceDispatch] = useReducer(
-    diceReducer,
-    [1, 1, 1, 1, 1],
-    setDiceValues
-  );
+  const [diceState, diceDispatch] = useReducer(diceReducer, [1, 1, 1, 1, 1], setDiceValues);
 
   const [rollState, rollDispatch] = useReducer(rollReducer, {
     isRolling: false,
     animationTimeLeft: 0,
   });
 
+  //TODO: Change this to use useReducer!
   const [buttonText, setButtonText] = useState("Tirar");
   const [isEnabled, setIsEnabled] = useState(true); //if the button is clickable
   const [remainingRolls, setRemainingRolls] = useState(3);
@@ -45,7 +42,6 @@ const GameBoard = ({ onScoreClick, playerScores, playerId }) => {
     const timer = setInterval(() => {
       diceDispatch({ type: "RANDOMIZE_VALUES" });
       rollDispatch({ type: "SUBSTRACT_ANIMATION_TIME", payload: 50 });
-      // setRollTime(prevTime => prevTime - 50);
     }, 50);
 
     return () => {
@@ -54,11 +50,7 @@ const GameBoard = ({ onScoreClick, playerScores, playerId }) => {
   }, [rollState]);
 
   useEffect(() => {
-    const scores = getPossibleScores(
-      _.map(diceState, "value"),
-      remainingRolls,
-      playerScores
-    );
+    const scores = getPossibleScores(_.map(diceState, "value"), remainingRolls, playerScores);
 
     setPossibleScores(scores);
   }, [remainingRolls, diceState, playerScores]);
