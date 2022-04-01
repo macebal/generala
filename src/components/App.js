@@ -8,6 +8,7 @@ const INITIAL_STATE = {
   0: { name: "Player 1", scores: INITIAL_SCORE },
   1: { name: "Player 2", scores: INITIAL_SCORE },
   2: { name: "Player 3", scores: INITIAL_SCORE },
+  3: { name: "Player 4", scores: INITIAL_SCORE },
 };
 
 const App = () => {

@@ -3,6 +3,8 @@ import { GAME_NAMES, GAME_ORDER } from "../util/gameData";
 import PlayerScore from "./PlayerScore";
 import _ from "lodash";
 
+const PLAYER_COLORS = ["blue", "green", "red", "yellow", "pink", "teal"];
+
 const ScoreBoard = ({ gameState }) => {
   return (
     <table className="ui selectable celled unstackable center aligned very compact table">
@@ -25,7 +27,13 @@ const ScoreBoard = ({ gameState }) => {
       </thead>
       <tbody>
         {_.map(gameState, (playerData, id) => {
-          return <PlayerScore key={id} playerData={playerData} />;
+          return (
+            <PlayerScore
+              key={id}
+              playerData={playerData}
+              color={PLAYER_COLORS[id]}
+            />
+          );
         })}
       </tbody>
     </table>
