@@ -50,7 +50,7 @@ const App = () => {
       </div>
       <div className="ui container segment">
         <GameBoard
-          playerId={currentPlayerId}
+          playerName={gameState[currentPlayerId].name}
           playerScores={playerData.scores}
           onScoreClick={handleScoreClick}
         />

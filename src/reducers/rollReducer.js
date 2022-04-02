@@ -4,7 +4,7 @@ const rollReducer = (state, action) => {
     case "SUBSTRACT_ANIMATION_TIME":
       //The action payload needs to be the time (in milis) to substract to the animation
       const newTime = state.animationTimeLeft - action.payload;
-      console.log(newTime);
+
       if (newTime > 0) {
         return {
           ...state,

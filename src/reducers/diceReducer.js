@@ -29,6 +29,8 @@ const diceReducer = (state, action) => {
       });
       //This action replaces the old state but keeps all the properties
       return newValues;
+    case "SET_STATE":
+      return action.payload;
     default:
       return state;
   }
