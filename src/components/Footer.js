@@ -12,7 +12,9 @@ const Footer = () => {
     return (
       <>
         Creado con <i class="heart icon red"></i> por{" "}
-        <a href="https://github.com/macebal">Mariano Acebal</a>
+        <a href="https://github.com/macebal" target="_blank" rel="noreferrer">
+          Mariano Acebal
+        </a>
       </>
     );
   };

@@ -5,8 +5,11 @@ import GameBoard from "./GameBoard";
 import ScoreBoard from "./ScoreBoard";
 import Menu from "./Menu";
 import Footer from "./Footer";
+import Modal from "./Modal";
+import VictoryScreen from "./VictoryScreen";
 
 //TODO: Hacer pantalla de victoria
+//TODO: Añadir logica para agregar/editar/borrar jugador
 //TODO: Agregar splash, jugar y reglas (las rutas y la navegacion)
 
 const INITIAL_STATE = {
@@ -66,6 +69,7 @@ const App = () => {
           onScoreClick={handleScoreClick}
         />
       </div>
+      {/* <VictoryScreen /> */}
       <div className="ui container">
         <Footer />
       </div>
