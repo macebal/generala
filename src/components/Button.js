@@ -1,6 +1,7 @@
 import React from "react";
 
-const Button = ({ text, onClick, isEnabled, color }) => {
+const Button = ({ data, onClick }) => {
+  const { text, isEnabled, color } = data;
   return (
     <button
       className={`big ui ${color} button`}

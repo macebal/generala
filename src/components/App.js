@@ -45,12 +45,12 @@ const App = () => {
 
   return (
     <React.StrictMode>
-      <div className="ui container segment">
+      <div className="ui container segment" style={{ overflowX: "scroll" }}>
         <ScoreBoard gameState={gameState} />
       </div>
       <div className="ui container segment">
         <GameBoard
-          playerId={currentPlayerId}
+          playerName={gameState[currentPlayerId].name}
           playerScores={playerData.scores}
           onScoreClick={handleScoreClick}
         />

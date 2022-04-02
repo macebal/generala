@@ -1,158 +1,167 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useReducer } from "react";
+import _ from "lodash";
+
 import Button from "./Button";
 import Dices from "./Dices";
-import _ from "lodash";
+
 import getPossibleScores from "../util/scores";
 import Scores from "./Scores";
+import diceReducer from "../reducers/diceReducer";
+import rollReducer from "../reducers/rollReducer";
+import buttonReducer from "../reducers/buttonReducer";
 
-const getDefaultDiceState = values => {
+const setDiceValues = values => {
   return _.chain(values)
     .map((value, index) => {
       return {
         id: index,
         value: value,
-        selected: false,
+        isSelected: false,
       };
     })
     .mapKeys("id")
     .value();
 };
 
-const GameBoard = ({ onScoreClick, playerScores, playerId }) => {
-  const [diceValues, setDiceValues] = useState(
-    getDefaultDiceState([1, 1, 1, 1, 1])
+const GameBoard = ({ onScoreClick, playerScores, playerName }) => {
+  const [diceState, diceDispatch] = useReducer(
+    diceReducer,
+    [1, 1, 1, 1, 1],
+    setDiceValues
   );
-  const [rollTime, setRollTime] = useState(0); //remaining time for the roll animation
-  const [buttonText, setButtonText] = useState("Tirar");
-  const [isEnabled, setIsEnabled] = useState(true); //if the button is clickable
+
+  const [rollState, rollDispatch] = useReducer(rollReducer, {
+    isRolling: false,
+    animationTimeLeft: 0,
+  });
+
+  const [buttonState, buttonDispatch] = useReducer(buttonReducer, {
+    text: "Tirar",
+    isEnabled: true,
+    color: "blue",
+    shouldChangePlayer: false,
+  });
+
   const [remainingRolls, setRemainingRolls] = useState(3);
   const [possibleScores, setPossibleScores] = useState([]);
 
   useEffect(() => {
-    if (rollTime <= 0) {
-      return;
-    }
+    if (!rollState.isRolling) return;
 
     const timer = setInterval(() => {
-      let newValues = _.clone(diceValues);
-
-      //Progressively modify the newValues array with a random number
-      //for each element, if it's not selected
-      _.forEach(newValues, (dice, id) => {
-        newValues = {
-          ...newValues,
-          [id]: {
-            ...dice,
-            value: dice.selected ? dice.value : Math.ceil(Math.random() * 6),
-          },
-        };
-      });
-      setDiceValues(newValues);
-      setRollTime(prevTime => prevTime - 50);
+      diceDispatch({ type: "RANDOMIZE_VALUES" });
+      rollDispatch({ type: "SUBSTRACT_ANIMATION_TIME", payload: 50 });
     }, 50);
 
     return () => {
       clearInterval(timer);
     };
-  }, [rollTime, diceValues]);
+  }, [rollState]);
 
   useEffect(() => {
     const scores = getPossibleScores(
-      _.map(diceValues, "value"),
+      _.map(diceState, "value"),
       remainingRolls,
       playerScores
     );
 
     setPossibleScores(scores);
-  }, [remainingRolls, diceValues, playerScores]);
+  }, [remainingRolls, diceState, playerScores]);
 
   useEffect(() => {
-    //FIXME: Ni bien arranca no tiene que ser "Siguiente"
-    //FIXME: El turno debe terminar si seleccionan un score antes de hacer los 3 tiros
-    setIsEnabled(true);
-    setRemainingRolls(0);
-    setPossibleScores([]);
-  }, [playerId]);
-
-  useEffect(() => {
-    if (rollTime > 0) {
-      setButtonText("Tirando");
+    if (rollState.isRolling) {
+      buttonDispatch({ type: "ROLLING" });
     } else {
       switch (remainingRolls) {
         case 0:
-          setButtonText("Siguiente");
+          buttonDispatch({ type: "WAIT_FOR_SCORE_CLICK" });
           break;
         default:
-          setButtonText("Tirar");
-          setIsEnabled(true);
+          buttonDispatch({ type: "CAN_ROLL" });
           break;
       }
     }
-  }, [remainingRolls, rollTime, playerId]);
+  }, [remainingRolls, rollState]);
 
   const handleRoll = () => {
-    if (remainingRolls > 0) {
-      setRollTime(1000);
-      setIsEnabled(false);
-      setRemainingRolls(remainingRolls - 1);
-    } else {
+    if (buttonState.shouldChangePlayer) {
+      diceDispatch({
+        type: "SET_STATE",
+        payload: setDiceValues([1, 1, 1, 1, 1]),
+      });
       setRemainingRolls(3);
-      setDiceValues(getDefaultDiceState([1, 1, 1, 1, 1]));
+    } else {
+      if (remainingRolls > 0) {
+        rollDispatch({ type: "SET_ANIMATION_DURATION", payload: 1000 });
+        setRemainingRolls(remainingRolls - 1);
+      }
     }
   };
 
   const handleSelection = diceId => {
-    // this is done to avoid selection of dice while the rolling animation is happening or before the first roll
-    if (isEnabled && remainingRolls < 3) {
-      let dice = diceValues[diceId];
+    // This is done to avoid selection of dice while the rolling animation is happening or before the first roll
+    if (!rollState.isRolling && remainingRolls < 3) {
+      diceDispatch({ type: "TOGGLE_SELECTION", payload: diceId });
+    }
+  };
 
-      dice = {
-        ...dice,
-        selected: !dice.selected,
-      };
-      setDiceValues({ ...diceValues, [diceId]: dice });
+  const handleScoreClick = (shortName, score) => {
+    //This function handles all the button and roll state logic before returning the original function coming
+    //from the parent component
+    buttonDispatch({ type: "NEXT_PLAYER" });
+    return onScoreClick(shortName, score);
+  };
+
+  const getLabelText = remainingRolls => {
+    switch (remainingRolls) {
+      case 0:
+        return "No quedan tiros";
+      case 1:
+        return "Queda 1 tiro";
+      default:
+        return `Quedan ${remainingRolls} tiros`;
     }
   };
 
   return (
-    <div className="ui center aligned  middle aligned stackable grid">
+    <div className="ui center aligned middle aligned stackable grid">
+      {!buttonState.shouldChangePlayer && (
+        <div className="one column row">
+          <div className="column">
+            <div className="ui header">{`Es el turno de ${playerName}`}</div>
+          </div>
+        </div>
+      )}
       <div className="two column row">
         <div className=" three wide mobile two wide computer column">
           <div className="ui header">
-            <Button
-              text={buttonText}
-              onClick={handleRoll}
-              isEnabled={isEnabled}
-              color={buttonText === "Siguiente" ? "green" : "blue"}
-            />
+            <Button data={buttonState} onClick={handleRoll} />
           </div>
         </div>
         <div className="eight wide tablet six wide computer column">
-          <Dices values={diceValues} onClick={handleSelection} />
+          <Dices values={diceState} onClick={handleSelection} />
         </div>
       </div>
-      {possibleScores.length > 0 && remainingRolls < 3 && (
+      {possibleScores.length > 0 &&
+      remainingRolls < 3 &&
+      !buttonState.shouldChangePlayer ? (
         <div className="one column row">
           <div className="column">
             <Scores
               scores={possibleScores}
-              isEnabled={rollTime === 0}
-              onScoreClick={onScoreClick}
+              isEnabled={!rollState.isRolling}
+              onScoreClick={handleScoreClick}
             />
           </div>
         </div>
-      )}
-      <div className="one column row">
-        <div className="column">
-          <div className="ui header">
-            {remainingRolls === 0
-              ? `No quedan tiros`
-              : remainingRolls === 1
-              ? `Queda 1 tiro`
-              : `Quedan ${remainingRolls} tiros`}
+      ) : null}
+      {!buttonState.shouldChangePlayer && (
+        <div className="one column row">
+          <div className="column">
+            <div className="ui header">{getLabelText(remainingRolls)}</div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

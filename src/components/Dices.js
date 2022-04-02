@@ -11,7 +11,7 @@ const Dices = ({ values, onClick }) => {
         {_.map(values, dice => {
           return (
             <div
-              className={`column ${dice.selected && "blue"}`}
+              className={`column ${dice.isSelected && "blue"}`}
               key={dice.id}
               onClick={() => onClick(dice.id)}
             >
