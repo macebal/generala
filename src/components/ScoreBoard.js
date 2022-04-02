@@ -10,7 +10,7 @@ const ScoreBoard = ({ gameState }) => {
     <table className="ui selectable celled unstackable center aligned very compact table">
       <thead>
         <tr>
-          <th></th>
+          <th style={{ minWidth: 70 }}></th>
           {GAME_ORDER.map(game => {
             const { shortName, longName } = GAME_NAMES[game];
             return (
