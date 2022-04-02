@@ -3,6 +3,11 @@ import _ from "lodash";
 import { INITIAL_SCORE } from "../util/gameData";
 import GameBoard from "./GameBoard";
 import ScoreBoard from "./ScoreBoard";
+import Menu from "./Menu";
+import Footer from "./Footer";
+
+//TODO: Hacer pantalla de victoria
+//TODO: Agregar splash, jugar y reglas (las rutas y la navegacion)
 
 const INITIAL_STATE = {
   0: { name: "Player 1", scores: INITIAL_SCORE },
@@ -45,7 +50,13 @@ const App = () => {
 
   return (
     <React.StrictMode>
-      <div className="ui container segment" style={{ overflowX: "scroll" }}>
+      <div className="ui container">
+        <Menu />
+      </div>
+      <div
+        className="ui container segment"
+        style={{ overflowX: "scroll", scrollbarWidth: "none" }}
+      >
         <ScoreBoard gameState={gameState} />
       </div>
       <div className="ui container segment">
@@ -54,6 +65,9 @@ const App = () => {
           playerScores={playerData.scores}
           onScoreClick={handleScoreClick}
         />
+      </div>
+      <div className="ui container">
+        <Footer />
       </div>
     </React.StrictMode>
   );
