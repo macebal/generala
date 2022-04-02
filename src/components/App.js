@@ -5,10 +5,8 @@ import GameBoard from "./GameBoard";
 import ScoreBoard from "./ScoreBoard";
 import Menu from "./Menu";
 import Footer from "./Footer";
-import Modal from "./Modal";
 import VictoryScreen from "./VictoryScreen";
 
-//TODO: Hacer pantalla de victoria
 //TODO: Añadir logica para agregar/editar/borrar jugador
 //TODO: Agregar splash, jugar y reglas (las rutas y la navegacion)
 
@@ -25,6 +23,9 @@ const App = () => {
     Object.keys(INITIAL_STATE)[0]
   );
 
+  const [showModal, setShowModal] = useState(false);
+  const [winMotive, setWinMotive] = useState("");
+
   const playerData = gameState[currentPlayerId];
 
   const handleScoreClick = (gameName, score) => {
@@ -34,6 +35,11 @@ const App = () => {
       [currentPlayerId]: { ...playerData, scores: newScores },
     });
     setCurrentPlayerId(getNextPlayer());
+  };
+
+  const handleVictory = (motive = "") => {
+    setShowModal(true);
+    setWinMotive(motive);
   };
 
   const getNextPlayer = () => {
@@ -53,6 +59,7 @@ const App = () => {
 
   return (
     <React.StrictMode>
+      <VictoryScreen isActive={showModal} motive={winMotive} />
       <div className="ui container">
         <Menu />
       </div>
@@ -67,9 +74,9 @@ const App = () => {
           playerName={gameState[currentPlayerId].name}
           playerScores={playerData.scores}
           onScoreClick={handleScoreClick}
+          onVictory={handleVictory}
         />
       </div>
-      {/* <VictoryScreen /> */}
       <div className="ui container">
         <Footer />
       </div>

@@ -90,7 +90,6 @@ const getPossibleScores = (
   remainingRolls = 3,
   playerData = {}
 ) => {
-  //TODO: Handle the case when  there are no possible socres or crossable games
   const hasGenerala = hasScoreInGame("G", playerData);
   const rollNumber = 3 - remainingRolls;
 

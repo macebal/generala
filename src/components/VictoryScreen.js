@@ -1,18 +1,32 @@
 import React from "react";
 import Modal from "./Modal";
 
-const VictoryScreen = () => {
+const VictoryScreen = ({ isActive, motive }) => {
+  //if motive = "points, it means that the victory was achieved by finalizing all the rolling rounds"
+  //if motive = "generala", it means that the victory was achieved by scoring Generala on the first roll
+
+  const getHeaderText = () => {
+    switch (motive) {
+      case "generala":
+        return "¡Obtuvo una generala en el primer tiro!";
+      case "points":
+        return "Tuvo la mayor cantidad de puntos al finalizar la ultima ronda";
+      default:
+        return "La partida ha finalizado";
+    }
+  };
+
   return (
-    <Modal>
+    <Modal active={isActive}>
       <Modal.Header>
-        <em data-emoji=":tada:" class="small"></em>
+        <em data-emoji=":tada:" className="small"></em>
         {`¡Ha ganado <<<Player>>>!`}
-        <em data-emoji=":tada:" class="small"></em>
+        <em data-emoji=":tada:" className="small"></em>
       </Modal.Header>
       <Modal.Content>
-        <div class="ui one column centered grid">
+        <div className="ui one column centered grid">
           <div className="center aligned column">
-            <p>Tuvo la mayor cantidad de puntos al finalizar la ultima ronda</p>
+            <p>{getHeaderText()}</p>
           </div>
           <div className="column">
             <table className="ui selectable unstackable center aligned very compact table">
@@ -26,21 +40,21 @@ const VictoryScreen = () => {
               <tbody>
                 <tr className="left marked green">
                   <td>
-                    <em data-emoji=":trophy:" class="small"></em>
+                    <em data-emoji=":trophy:" className="small"></em>
                   </td>
                   <td>Player</td>
                   <td>100</td>
                 </tr>
                 <tr className="left marked green">
                   <td>
-                    <em data-emoji=":second_place:" class="small"></em>
+                    <em data-emoji=":second_place:" className="small"></em>
                   </td>
                   <td>Player</td>
                   <td>50</td>
                 </tr>
                 <tr className="left marked green">
                   <td>
-                    <em data-emoji=":third_place:" class="small"></em>
+                    <em data-emoji=":third_place:" className="small"></em>
                   </td>
                   <td>Player</td>
                   <td>20</td>
@@ -56,8 +70,8 @@ const VictoryScreen = () => {
         </div>
       </Modal.Content>
       <Modal.Actions>
-        <div class="ui green button">Nueva Partida</div>
-        <div class="ui red button">Cerrar</div>
+        <div className="ui green button">Nueva Partida</div>
+        <div className="ui red button">Cerrar</div>
       </Modal.Actions>
     </Modal>
   );

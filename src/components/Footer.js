@@ -4,14 +4,14 @@ const Footer = () => {
   const getFooterLeft = () => {
     return (
       <>
-        <i class="copyright outline icon"></i>2022
+        <i className="copyright outline icon"></i>2022
       </>
     );
   };
   const getFooterRight = () => {
     return (
       <>
-        Creado con <i class="heart icon red"></i> por{" "}
+        Creado con <i className="heart icon red"></i> por{" "}
         <a href="https://github.com/macebal" target="_blank" rel="noreferrer">
           Mariano Acebal
         </a>
@@ -21,17 +21,17 @@ const Footer = () => {
   return (
     <div className="ui segment">
       <div className="ui stackable grid">
-        <div class="two column mobile only row">
-          <div class="left floated center aligned column">
+        <div className="two column mobile only row">
+          <div className="left floated center aligned column">
             {getFooterLeft()}
           </div>
-          <div class="right floated center aligned column">
+          <div className="right floated center aligned column">
             {getFooterRight()}
           </div>
         </div>
-        <div class="two column tablet computer only row">
-          <div class="left floated column">{getFooterLeft()}</div>
-          <div class="right floated right aligned column">
+        <div className="two column tablet computer only row">
+          <div className="left floated column">{getFooterLeft()}</div>
+          <div className="right floated right aligned column">
             {getFooterRight()}
           </div>
         </div>

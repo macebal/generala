@@ -1,10 +1,11 @@
 import ReactDOM from "react-dom";
 
-const Modal = ({ children }) => {
+const Modal = ({ children, active }) => {
+  //FIXME: ADD onClick events to close the modal
   return ReactDOM.createPortal(
-    <div className="ui dimmer visible modals active">
-      <div className="ui standar modal visible active">
-        <i class="close icon"></i>
+    <div className={`ui dimmer visible modals ${active && "active"}`}>
+      <div className={`ui standar modal visible ${active && "active"}`}>
+        <i className="close icon"></i>
         {children}
       </div>
     </div>,
@@ -13,7 +14,7 @@ const Modal = ({ children }) => {
 };
 
 const Header = ({ children }) => {
-  return <div class="center aligned header">{children}</div>;
+  return <div className="center aligned header">{children}</div>;
 };
 
 const Content = ({ children }) => {
@@ -21,7 +22,7 @@ const Content = ({ children }) => {
 };
 
 const Actions = ({ children }) => {
-  return <div class="actions">{children}</div>;
+  return <div className="actions">{children}</div>;
 };
 
 Modal.Header = Header;

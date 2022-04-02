@@ -23,7 +23,7 @@ const setDiceValues = values => {
     .value();
 };
 
-const GameBoard = ({ onScoreClick, playerScores, playerName }) => {
+const GameBoard = ({ onScoreClick, onVictory, playerScores, playerName }) => {
   const [diceState, diceDispatch] = useReducer(
     diceReducer,
     [1, 1, 1, 1, 1],
@@ -82,6 +82,20 @@ const GameBoard = ({ onScoreClick, playerScores, playerName }) => {
       }
     }
   }, [remainingRolls, rollState]);
+
+  useEffect(() => {
+    if (!rollState.isRolling && remainingRolls === 2) {
+      //if the player gets a Generala in the first roll, it automatically wins
+
+      const hasWinCondition =
+        _.filter(
+          possibleScores,
+          item => (item.name === "G" || item.name === "DG") && item.score > 0
+        ).length > 0;
+
+      if (hasWinCondition) onVictory("generala");
+    }
+  }, [remainingRolls, rollState, possibleScores, onVictory]);
 
   const handleRoll = () => {
     if (buttonState.shouldChangePlayer) {
