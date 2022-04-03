@@ -83,6 +83,7 @@ const GameBoard = ({ onScoreClick, onVictory, playerScores, playerName }) => {
     }
   }, [remainingRolls, rollState]);
 
+  //Check for victory condition on every roll
   useEffect(() => {
     if (!rollState.isRolling && remainingRolls === 2) {
       //if the player gets a Generala in the first roll, it automatically wins
@@ -93,7 +94,11 @@ const GameBoard = ({ onScoreClick, onVictory, playerScores, playerName }) => {
           item => (item.name === "G" || item.name === "DG") && item.score > 0
         ).length > 0;
 
-      if (hasWinCondition) onVictory("generala");
+      //Wait 1 second before showing the victory screen to allow the player to see the dices
+      if (hasWinCondition)
+        setTimeout(() => {
+          onVictory("generala");
+        }, 1000);
     }
   }, [remainingRolls, rollState, possibleScores, onVictory]);
 

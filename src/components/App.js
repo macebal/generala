@@ -23,7 +23,7 @@ const App = () => {
     Object.keys(INITIAL_STATE)[0]
   );
 
-  const [showModal, setShowModal] = useState(false);
+  const [showVictoryScreen, setShowVictoryScreen] = useState(false);
   const [winMotive, setWinMotive] = useState("");
 
   const playerData = gameState[currentPlayerId];
@@ -38,7 +38,7 @@ const App = () => {
   };
 
   const handleVictory = (motive = "") => {
-    setShowModal(true);
+    setShowVictoryScreen(true);
     setWinMotive(motive);
   };
 
@@ -59,7 +59,11 @@ const App = () => {
 
   return (
     <React.StrictMode>
-      <VictoryScreen isActive={showModal} motive={winMotive} />
+      <VictoryScreen
+        isActive={showVictoryScreen}
+        motive={winMotive}
+        onClose={() => setShowVictoryScreen(false)}
+      />
       <div className="ui container">
         <Menu />
       </div>

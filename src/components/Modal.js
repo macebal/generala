@@ -1,11 +1,10 @@
 import ReactDOM from "react-dom";
 
-const Modal = ({ children, active }) => {
-  //FIXME: ADD onClick events to close the modal
+const Modal = ({ children, active, onClose }) => {
   return ReactDOM.createPortal(
     <div className={`ui dimmer visible modals ${active && "active"}`}>
       <div className={`ui standar modal visible ${active && "active"}`}>
-        <i className="close icon"></i>
+        <i className="close icon" onClick={onClose}></i>
         {children}
       </div>
     </div>,

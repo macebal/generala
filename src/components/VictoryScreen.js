@@ -1,7 +1,7 @@
 import React from "react";
 import Modal from "./Modal";
 
-const VictoryScreen = ({ isActive, motive }) => {
+const VictoryScreen = ({ isActive, motive, onClose }) => {
   //if motive = "points, it means that the victory was achieved by finalizing all the rolling rounds"
   //if motive = "generala", it means that the victory was achieved by scoring Generala on the first roll
 
@@ -17,7 +17,7 @@ const VictoryScreen = ({ isActive, motive }) => {
   };
 
   return (
-    <Modal active={isActive}>
+    <Modal active={isActive} onClose={onClose}>
       <Modal.Header>
         <em data-emoji=":tada:" className="small"></em>
         {`¡Ha ganado <<<Player>>>!`}
@@ -71,7 +71,9 @@ const VictoryScreen = ({ isActive, motive }) => {
       </Modal.Content>
       <Modal.Actions>
         <div className="ui green button">Nueva Partida</div>
-        <div className="ui red button">Cerrar</div>
+        <div className="ui red button" onClick={onClose}>
+          Cerrar
+        </div>
       </Modal.Actions>
     </Modal>
   );
