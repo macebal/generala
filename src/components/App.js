@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import _ from "lodash";
 import { INITIAL_SCORE } from "../util/gameData";
 import GameBoard from "./GameBoard";
@@ -9,12 +9,11 @@ import VictoryScreen from "./VictoryScreen";
 
 //TODO: Añadir logica para agregar/editar/borrar jugador
 //TODO: Agregar splash, jugar y reglas (las rutas y la navegacion)
+//TODO: Deshabilitar el boton cuando termina el juego!
 
 const INITIAL_STATE = {
   0: { name: "Player 1", scores: INITIAL_SCORE },
   1: { name: "Player 2", scores: INITIAL_SCORE },
-  2: { name: "Player 3", scores: INITIAL_SCORE },
-  3: { name: "Player 4", scores: INITIAL_SCORE },
 };
 
 const App = () => {
@@ -27,6 +26,19 @@ const App = () => {
   const [winMotive, setWinMotive] = useState("");
 
   const playerData = gameState[currentPlayerId];
+
+  useEffect(() => {
+    //This function returns every score that has a value of 0.
+    //If there are none, the game is over and a winner must be decided.
+    const scoresRemaining = _.chain(gameState)
+      .map(player => {
+        return _.filter(player.scores, value => value === 0);
+      })
+      .flatten()
+      .value();
+
+    if (scoresRemaining.length === 0) handleVictory("points");
+  }, [gameState]);
 
   const handleScoreClick = (gameName, score) => {
     const newScores = { ...playerData.scores, [gameName]: score };
@@ -62,6 +74,7 @@ const App = () => {
       <VictoryScreen
         isActive={showVictoryScreen}
         motive={winMotive}
+        gameState={gameState}
         onClose={() => setShowVictoryScreen(false)}
       />
       <div className="ui container">

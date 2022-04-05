@@ -3,7 +3,7 @@ import { GAME_NAMES, GAME_ORDER } from "../util/gameData";
 import PlayerScore from "./PlayerScore";
 import _ from "lodash";
 
-const PLAYER_COLORS = ["blue", "green", "red", "yellow", "pink", "teal"];
+export const PLAYER_COLORS = ["blue", "green", "red", "yellow", "pink", "teal"];
 
 const ScoreBoard = ({ gameState }) => {
   return (

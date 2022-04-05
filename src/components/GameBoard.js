@@ -95,10 +95,12 @@ const GameBoard = ({ onScoreClick, onVictory, playerScores, playerName }) => {
         ).length > 0;
 
       //Wait 1 second before showing the victory screen to allow the player to see the dices
-      if (hasWinCondition)
+      if (hasWinCondition) {
         setTimeout(() => {
           onVictory("generala");
         }, 1000);
+        return;
+      }
     }
   }, [remainingRolls, rollState, possibleScores, onVictory]);
 
