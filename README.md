@@ -9,3 +9,7 @@ It uses the Fomantic UI (fork of Semantic UI) for the CSS.
 Simply `git clone` this repository and run `npm install` inside the project directory.
 
 After that `npm start` to execute it in [http://localhost:3000](http://localhost:3000).
+
+## Live Version
+
+There is a live version available [here](https://generala-app.netlify.app)
