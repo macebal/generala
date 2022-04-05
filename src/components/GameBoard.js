@@ -26,7 +26,7 @@ const setDiceValues = values => {
 const GameBoard = ({ onScoreClick, onVictory, playerScores, playerName }) => {
   const [diceState, diceDispatch] = useReducer(
     diceReducer,
-    [1, 1, 1, 1, 1],
+    [1, 2, 3, 4, 5],
     setDiceValues
   );
 
@@ -108,7 +108,7 @@ const GameBoard = ({ onScoreClick, onVictory, playerScores, playerName }) => {
     if (buttonState.shouldChangePlayer) {
       diceDispatch({
         type: "SET_STATE",
-        payload: setDiceValues([1, 1, 1, 1, 1]),
+        payload: setDiceValues([1, 2, 3, 4, 5]),
       });
       setRemainingRolls(3);
     } else {
