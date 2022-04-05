@@ -108,7 +108,7 @@ const GameBoard = ({ onScoreClick, onVictory, playerScores, playerName }) => {
     if (buttonState.shouldChangePlayer) {
       diceDispatch({
         type: "SET_STATE",
-        payload: setDiceValues([1, 2, 3, 4, 5]),
+        payload: setDiceValues([1, 1, 1, 1, 1]),
       });
       setRemainingRolls(3);
     } else {

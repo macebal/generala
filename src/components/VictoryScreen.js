@@ -23,8 +23,6 @@ const VictoryScreen = ({ isActive, motive, onClose, gameState }) => {
     .orderBy("sortingScore", "desc")
     .value();
 
-  console.log(tableData);
-
   const ICON_NAMES = [":trophy:", ":second_place:", ":third_place:"];
 
   const getHeaderText = () => {
@@ -32,7 +30,7 @@ const VictoryScreen = ({ isActive, motive, onClose, gameState }) => {
       case "generala":
         return "¡Obtuvo una generala en el primer tiro!";
       case "points":
-        return "Tuvo la mayor cantidad de puntos al finalizar la ultima ronda";
+        return "Tuvo la mayor cantidad de puntos al finalizar la última ronda";
       default:
         return "La partida ha finalizado";
     }
