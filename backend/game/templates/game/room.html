@@ -10,10 +10,11 @@
     <input id="chat-message-input" type="text" size="100"><br>
     <input id="chat-message-submit" type="button" value="Send">
     {{ room_name|json_script:"room-name" }}
+    <input id="dice-roll" type="button" value="Roll Dice">
     <script>
         const roomName = JSON.parse(document.getElementById('room-name').textContent);
 
-        const chatSocket = new WebSocket(
+        const gameSocket = new WebSocket(
             'ws://'
             + window.location.host
             + '/ws/game/'
@@ -21,12 +22,17 @@
             + '/'
         );
 
-        chatSocket.onmessage = function(e) {
+        gameSocket.onmessage = function(e) {
             const data = JSON.parse(e.data);
-            document.querySelector('#chat-log').value += (data.message + '\n');
+            if (data.type == 'chat.message') {
+                document.querySelector('#chat-log').value += (data.content.message + '\n');    
+            }else if (data.type == 'dice.roll') {
+                console.log("Rolled dice")
+            }
+            
         };
 
-        chatSocket.onclose = function(e) {
+        gameSocket.onclose = function(e) {
             console.error('Chat socket closed unexpectedly');
         };
 
@@ -40,11 +46,20 @@
         document.querySelector('#chat-message-submit').onclick = function(e) {
             const messageInputDom = document.querySelector('#chat-message-input');
             const message = messageInputDom.value;
-            chatSocket.send(JSON.stringify({
-                'message': message
+            gameSocket.send(JSON.stringify({
+                'type':'chat.message',
+                'content': {'message': message}
             }));
             messageInputDom.value = '';
         };
+
+        document.querySelector('#dice-roll').onclick = function(e) {
+            gameSocket.send(JSON.stringify({
+                'type': 'dice.roll',
+                "content": {"number_of_dice": 4}
+            }))
+        }
+
     </script>
 </body>
 </html>
