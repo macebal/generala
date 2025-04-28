@@ -12,6 +12,10 @@
     {{ room_name|json_script:"room-name" }}
     <input id="dice-roll" type="button" value="Roll Dice">
     <input id="finish-turn" type="button" value="Finish Turn">
+    <br>
+    Player list
+    <ul id="player-list"></ul>
+    <p>It is player <em id="current-player-turn-id">foo</em>'s turn</p>
     <script>
         function getOrCreateUserId() {
             const storageKey = "user_id";
@@ -48,6 +52,14 @@
                 document.querySelector('#chat-log').value += (data.content.message + '\n');    
             } else if (data.type == 'dice.roll.result') {
                 console.log("Rolled dice:", data.content.result);
+            } else if (data.type == 'player.status.joined' || data.type == 'player.status.left') {
+                console.log("Something happened")
+                document.querySelector('#player-list').innerHTML = '';
+                data.content.all_players.forEach(element => {
+                    const li = document.createElement('li')
+                    li.textContent = element
+                    document.querySelector('#player-list').appendChild(li)
+                });
             }
         };
     

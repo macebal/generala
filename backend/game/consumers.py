@@ -29,9 +29,30 @@ class GameConsumer(AsyncWebsocketConsumer):
 
         await self.accept()
 
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                "type": "player.status.joined",
+                "content": {
+                    "player_id": self.player_id,
+                    "all_players": self.player_ids,
+                },
+            },
+        )
+
     async def disconnect(self, close_code):
         # Leave room group
         self.player_ids.remove(self.player_id)
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                "type": "player.status.left",
+                "content": {
+                    "player_id": self.player_id,
+                    "all_players": self.player_ids,
+                },
+            },
+        )
         await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
     # Receive message from WebSocket
@@ -83,6 +104,16 @@ class GameConsumer(AsyncWebsocketConsumer):
     async def player_turn_next(self, event):
         # corresponds to the `player.next.turn` type
         # event = {'type': 'player.next.turn', 'content': {'next_player': str}}
+        await self.send(text_data=json.dumps(event))
+
+    async def player_status_joined(self, event):
+        # corresponds to the `player.status.joined` type
+        # event = {'type': 'player.status.joined', 'content': {'player_id': str, 'all_players': list[str]}}
+        await self.send(text_data=json.dumps(event))
+
+    async def player_status_left(self, event):
+        # corresponds to the `player.status.joined` type
+        # event = {'type': 'player.status.left', 'content': {'player_id': str, 'all_players': list[str]}}
         await self.send(text_data=json.dumps(event))
 
     @staticmethod
