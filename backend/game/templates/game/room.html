@@ -11,55 +11,83 @@
     <input id="chat-message-submit" type="button" value="Send">
     {{ room_name|json_script:"room-name" }}
     <input id="dice-roll" type="button" value="Roll Dice">
+    <input id="finish-turn" type="button" value="Finish Turn">
     <script>
+        function getOrCreateUserId() {
+            const storageKey = "user_id";
+            let userId = localStorage.getItem(storageKey);
+    
+            if (!userId) {
+                userId = generateRandomId();
+                localStorage.setItem(storageKey, userId);
+            }
+    
+            return userId;
+        }
+    
+        function generateRandomId() {
+            const randomPart = Math.random().toString(36).substring(2, 8);
+            return `user-${randomPart}`;
+        }
+    
+        const userId = getOrCreateUserId();
         const roomName = JSON.parse(document.getElementById('room-name').textContent);
-
+    
         const gameSocket = new WebSocket(
             'ws://'
             + window.location.host
             + '/ws/game/'
             + roomName
-            + '/'
+            + '/?player_id='
+            + encodeURIComponent(userId)
         );
-
+            
         gameSocket.onmessage = function(e) {
             const data = JSON.parse(e.data);
             if (data.type == 'chat.message') {
                 document.querySelector('#chat-log').value += (data.content.message + '\n');    
-            }else if (data.type == 'dice.roll') {
-                console.log("Rolled dice")
+            } else if (data.type == 'dice.roll.result') {
+                console.log("Rolled dice:", data.content.result);
             }
-            
         };
-
+    
         gameSocket.onclose = function(e) {
             console.error('Chat socket closed unexpectedly');
         };
-
+    
         document.querySelector('#chat-message-input').focus();
         document.querySelector('#chat-message-input').onkeyup = function(e) {
-            if (e.key === 'Enter') {  // enter, return
+            if (e.key === 'Enter') {
                 document.querySelector('#chat-message-submit').click();
             }
         };
-
+    
         document.querySelector('#chat-message-submit').onclick = function(e) {
             const messageInputDom = document.querySelector('#chat-message-input');
             const message = messageInputDom.value;
             gameSocket.send(JSON.stringify({
-                'type':'chat.message',
-                'content': {'message': message}
+                'type': 'chat.message',
+                'content': {
+                    'message': message,
+                }
             }));
             messageInputDom.value = '';
         };
-
+    
         document.querySelector('#dice-roll').onclick = function(e) {
             gameSocket.send(JSON.stringify({
                 'type': 'dice.roll',
-                "content": {"number_of_dice": 4}
-            }))
-        }
-
-    </script>
+                'content': {
+                    'number_of_dice': 4,
+                }
+            }));
+        };
+        document.querySelector('#finish-turn').onclick = function(e) {
+            gameSocket.send(JSON.stringify({
+                'type': 'player.turn.finish',
+                'content': null
+            }));
+        };
+    </script>    
 </body>
 </html>
