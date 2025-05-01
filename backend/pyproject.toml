@@ -8,5 +8,6 @@ dependencies = [
     "channels-redis>=4.2.1",
     "channels[daphne]>=4.2.2",
     "django>=5.2",
+    "pydantic>=2.11.4",
     "ruff>=0.11.7",
 ]
