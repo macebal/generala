@@ -52,13 +52,15 @@
                 document.querySelector('#chat-log').value += (data.content.message + '\n');    
             } else if (data.type == 'dice.roll.result') {
                 console.log("Rolled dice:", data.content.result);
-            } else if (data.type == 'player.status.joined' || data.type == 'player.status.left') {
-                console.log("Something happened")
+            } else if (data.type == 'game.status') {
                 document.querySelector('#player-list').innerHTML = '';
-                data.content.all_players.forEach(element => {
-                    const li = document.createElement('li')
-                    li.textContent = element
-                    document.querySelector('#player-list').appendChild(li)
+                const content = JSON.parse(data.content);
+                const players = Object.keys(content.state); // usernames like 'user-jwgktz', 'user-ou73ev'
+
+                players.forEach(element => {
+                    const li = document.createElement('li');
+                    li.textContent = element;
+                    document.querySelector('#player-list').appendChild(li);
                 });
             }
         };
