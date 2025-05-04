@@ -1,5 +1,6 @@
+from collections import OrderedDict
 import re
-from pydantic import BaseModel, ValidationInfo, field_validator
+from pydantic import BaseModel, ValidationInfo, field_validator, Field, ConfigDict
 from enum import StrEnum
 from dataclasses import dataclass
 
@@ -28,7 +29,9 @@ class GameStatus(StrEnum):
     FINISHED: str = "finished"
 
 
-class GameState(BaseModel):
+class PlayerGameState(BaseModel):
+    model_config = ConfigDict(validate_assignment=True)
+
     number_1: int | None = None
     number_2: int | None = None
     number_3: int | None = None
@@ -105,6 +108,22 @@ class GameState(BaseModel):
         )
 
 
-class GeneralaGame(BaseModel):
-    player_ids: list[str]
+class GameState(BaseModel):
     status: GameStatus = GameStatus.PENDING
+    state: dict[str, PlayerGameState] = Field(default_factory=OrderedDict)
+
+    @property
+    def player_ids(self) -> list[str]:
+        return list(self.state.keys())
+
+    def add_player(self, player_id: str) -> None:
+        # if player_id in self.state:
+        #     raise ValueError(f"Player {player_id} is already playing")
+
+        self.state[player_id] = PlayerGameState()
+
+    def remove_player(self, player_id: str) -> None:
+        self.state.pop(player_id, {})
+
+    def score(self, player_id: str, play_name: str, play_value: int):
+        setattr(self.state[player_id], play_name, play_value)
