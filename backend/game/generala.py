@@ -1,8 +1,25 @@
 import re
 from pydantic import BaseModel, ValidationInfo, field_validator
 from enum import StrEnum
+from dataclasses import dataclass
+
 
 FIELD_NUMBER_REGEX = re.compile(r"^number_(?P<number>[1-6])$")
+
+
+@dataclass(frozen=True)
+class Play:
+    name: str
+    value: int
+
+
+PLAYS = {
+    "straight": Play(name="straight", value=20),
+    "full_house": Play(name="full_house", value=30),
+    "poker": Play(name="poker", value=40),
+    "generala": Play(name="generala", value=50),
+    "double_generala": Play(name="double_generala", value=100),
+}
 
 
 class GameStatus(StrEnum):
@@ -63,32 +80,25 @@ class GameState(BaseModel):
         mode="after",
     )
     @classmethod
-    def validate_straight_value(
-        cls, value: int | None, info: ValidationInfo
-    ) -> int | None:
+    def validate_play_value(cls, value: int | None, info: ValidationInfo) -> int | None:
         if value is None or value == 0:
             return value
 
         match info.field_name:
-            case "straight":
-                if value == 20:
-                    return value
-            case "full_house":
-                if value == 30:
-                    return value
-            case "poker":
-                if value == 40:
-                    return value
-            case "generala":
-                if value == 50:
+            case "straight" | "full_house" | "poker" | "generala":
+                play = PLAYS[info.field_name]
+                if value == play.value:
                     return value
             case "double_generala":
+                play = PLAYS[info.field_name]
                 if info.data["generala"] != 50:
                     raise ValueError(
                         "A game of double generala cannot be scored before scoring a game of generala"
                     )
-                if value == 100:
+                if value == play.value:
                     return value
+            case _:
+                raise ValueError(f"Unknown play: {info.field_name}")
 
         raise ValueError(
             f"A value of {value} is not valid for the game of {info.field_name}"
