@@ -7,7 +7,12 @@ services:
       ports:
         - 8000:8000
   redis:
-    image: redis:7.2.8
+    image: redis:8.0.0
     container_name: redis
     ports:
       - 6379:6379
+  redisinsight:
+    image: redis/redisinsight:2.68
+    container_name: redisinsight
+    ports:
+      - 5540:5540
