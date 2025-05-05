@@ -1,18 +1,21 @@
 import json
 import random
+from game.context_managers import redis_game_state
+import redis
 from urllib.parse import parse_qs
-from game.generala import GameState
 from channels.generic.websocket import AsyncWebsocketConsumer
+
+r = redis.Redis(host="redis", port=6379, decode_responses=True)
 
 
 class GameConsumer(AsyncWebsocketConsumer):
     player_ids = list()
     current_player_index = 0
-    game_state = GameState()
 
     async def connect(self):
         self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
         self.room_group_name = f"game_{self.room_name}"
+        self.redis_key = f"game-room:{self.room_group_name}"
 
         query_params = parse_qs(self.scope["query_string"].decode())
         player_id = query_params.get("player_id", [None])[0]
@@ -22,8 +25,6 @@ class GameConsumer(AsyncWebsocketConsumer):
             self.close()
 
         self.player_id = player_id
-
-        self.game_state.add_player(player_id)
 
         # Join room group
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
@@ -86,19 +87,21 @@ class GameConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_send(self.room_group_name, event)
 
     async def handle_player_joined(self):
-        print("whaa")
-        self.game_state.add_player(self.player_id)
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {"type": "game.status", "content": self.game_state.model_dump_json()},
-        )
+        async with redis_game_state(r, self.redis_key) as state:
+            state.add_player(self.player_id)
+
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {"type": "game.status", "content": state.model_dump_json()},
+            )
 
     async def handle_player_left(self):
-        self.game_state.remove_player(self.player_id)
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {"type": "game.status", "content": self.game_state.model_dump_json()},
-        )
+        async with redis_game_state(r, self.redis_key) as state:
+            state.remove_player(self.player_id)
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {"type": "game.status", "content": state.model_dump_json()},
+            )
 
     async def chat_message(self, event):
         # corresponds to the `chat.message` type

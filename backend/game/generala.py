@@ -1,9 +1,10 @@
 from collections import OrderedDict
 import re
+from typing import Self
 from pydantic import BaseModel, ValidationInfo, field_validator, Field, ConfigDict
 from enum import StrEnum
 from dataclasses import dataclass
-
+import json
 
 FIELD_NUMBER_REGEX = re.compile(r"^number_(?P<number>[1-6])$")
 
@@ -127,3 +128,7 @@ class GameState(BaseModel):
 
     def score(self, player_id: str, play_name: str, play_value: int):
         setattr(self.state[player_id], play_name, play_value)
+
+    @classmethod
+    def from_json_string(cls, json_string) -> Self:
+        return cls(**json.loads(json_string))
