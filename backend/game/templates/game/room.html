@@ -55,7 +55,7 @@
             } else if (data.type == 'game.status') {
                 document.querySelector('#player-list').innerHTML = '';
                 const content = JSON.parse(data.content);
-                const players = Object.keys(content.state); // usernames like 'user-jwgktz', 'user-ou73ev'
+                const players = Object.keys(content.scores_per_player); // usernames like 'user-jwgktz', 'user-ou73ev'
 
                 players.forEach(element => {
                     const li = document.createElement('li');
@@ -92,7 +92,7 @@
             gameSocket.send(JSON.stringify({
                 'type': 'dice.roll',
                 'content': {
-                    'number_of_dice': 4,
+                    'keepers': [4],
                 }
             }));
         };

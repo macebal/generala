@@ -15,7 +15,7 @@ class GameConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
         self.room_group_name = f"game_{self.room_name}"
-        self.redis_key = f"game-room:{self.room_group_name}"
+        self.redis_key = f"game-room:{self.room_name}"
 
         query_params = parse_qs(self.scope["query_string"].decode())
         player_id = query_params.get("player_id", [None])[0]
@@ -66,15 +66,13 @@ class GameConsumer(AsyncWebsocketConsumer):
 
     async def handle_dice_roll(self, event):
         print(f"Dice rolled by {self.player_id}")
-        number_of_dice = event.get("content", {}).get("number_of_dice", 0)
-        event = {
-            "type": "dice.roll.result",
-            "content": {
-                "result": self.roll_dice(number_of_dice),
-            },
-        }
+        async with redis_game_state(r, self.redis_key_game_state) as state:
+            keepers = event.get("content", {}).get("keepers", [])
+            state.roll_dies(keeper_indices=keepers)
 
-        await self.channel_layer.group_send(self.room_group_name, event)
+            event = {"type": "game.status", "content": state.model_dump_json()}
+
+            await self.channel_layer.group_send(self.room_group_name, event)
 
     async def handle_player_turn_finish(self, event):
         print(f"Player {self.player_ids[self.current_player_index]} finished its turn")
@@ -87,7 +85,7 @@ class GameConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_send(self.room_group_name, event)
 
     async def handle_player_joined(self):
-        async with redis_game_state(r, self.redis_key) as state:
+        async with redis_game_state(r, self.redis_key_game_state) as state:
             state.add_player(self.player_id)
 
             await self.channel_layer.group_send(
@@ -96,7 +94,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             )
 
     async def handle_player_left(self):
-        async with redis_game_state(r, self.redis_key) as state:
+        async with redis_game_state(r, self.redis_key_game_state) as state:
             state.remove_player(self.player_id)
             await self.channel_layer.group_send(
                 self.room_group_name,
@@ -133,13 +131,6 @@ class GameConsumer(AsyncWebsocketConsumer):
     #     # event = {'type': 'player.status.left', 'content': {'player_id': str, 'all_players': list[str]}}
     #     await self.send(text_data=json.dumps(event))
 
-    @staticmethod
-    def roll_dice(number_of_dice: int) -> list[int]:
-        if number_of_dice == 0:
-            return []
-
-        return [random.randint(1, 6) for _ in range(number_of_dice)]
-
     def finish_turn(self) -> str:
         """Finished the current player id turn and moves the turn to the next.
         Returns the player id whose turn is next.
@@ -148,3 +139,11 @@ class GameConsumer(AsyncWebsocketConsumer):
             self.player_ids
         )
         return self.player_ids[self.current_player_index]
+
+    @property
+    def redis_key_game_state(self) -> str:
+        return f"{self.redis_key}:state"
+
+    @property
+    def redis_key_game_die_values(self) -> str:
+        return f"{self.redis_key}:dies"

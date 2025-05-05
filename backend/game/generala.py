@@ -1,4 +1,5 @@
 from collections import OrderedDict
+import random
 import re
 from typing import Self
 from pydantic import BaseModel, ValidationInfo, field_validator, Field, ConfigDict
@@ -110,24 +111,49 @@ class PlayerGameState(BaseModel):
 
 
 class GameState(BaseModel):
+    model_config = ConfigDict(validate_assignment=True)
+
     status: GameStatus = GameStatus.PENDING
-    state: dict[str, PlayerGameState] = Field(default_factory=OrderedDict)
+    scores_per_player: dict[str, PlayerGameState] = Field(default_factory=OrderedDict)
+    dies_values: list[int] = Field(default_factory=lambda: [1, 1, 1, 1, 1])
+
+    @field_validator("dies_values")
+    def validate_dies_number_and_values(cls, value) -> list[int]:
+        if any(item < 1 or item > 6 for item in value):
+            raise ValueError(f"All dice values have to be between 1 and 6: {value}")
+
+        if len(value) != 5:
+            raise ValueError(f"There has to be exactly 5 dies in the game: {value}")
+
+        return value
 
     @property
     def player_ids(self) -> list[str]:
-        return list(self.state.keys())
+        return list(self.scores_per_player.keys())
 
     def add_player(self, player_id: str) -> None:
         # if player_id in self.state:
         #     raise ValueError(f"Player {player_id} is already playing")
 
-        self.state[player_id] = PlayerGameState()
+        self.scores_per_player[player_id] = PlayerGameState()
 
     def remove_player(self, player_id: str) -> None:
-        self.state.pop(player_id, {})
+        self.scores_per_player.pop(player_id, {})
 
     def score(self, player_id: str, play_name: str, play_value: int):
-        setattr(self.state[player_id], play_name, play_value)
+        setattr(self.scores_per_player[player_id], play_name, play_value)
+
+    def roll_dies(self, keeper_indices: list[int] | None = None) -> list[int]:
+        keeper_indices = keeper_indices or []
+        new_dies = []
+        for i, value in enumerate(self.dies_values):
+            if i in keeper_indices:
+                new_dies.append(value)
+            else:
+                new_dies.append(random.randint(1, 6))
+
+        self.dies_values = new_dies
+        return new_dies
 
     @classmethod
     def from_json_string(cls, json_string) -> Self:
