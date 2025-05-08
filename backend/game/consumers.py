@@ -46,6 +46,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             "dice.roll": self.handle_dice_roll,
             "player.turn.finish": self.handle_player_turn_finish,
             "player.status.joined": self.handle_player_joined,
+            "game.status.change": self.handle_game_status_change,
         }
 
         try:
@@ -101,6 +102,17 @@ class GameConsumer(AsyncWebsocketConsumer):
                 {"type": "game.status", "content": state.model_dump_json()},
             )
 
+    async def handle_game_status_change(self, event):
+        new_status = event.get("content", {}).get("newStatus")
+        async with redis_game_state(r, self.redis_key_game_state) as state:
+            try:
+                state.update_status(new_status)
+                to_ret = {"type": "game.status", "content": state.model_dump_json()}
+            except Exception as e:
+                to_ret = {"type": "error", "content": {"msg": str(e)}}
+            print(f"{to_ret=}")
+            await self.channel_layer.group_send(self.room_group_name, to_ret)
+
     async def chat_message(self, event):
         # corresponds to the `chat.message` type
         # event = {'type': 'chat.message', 'content' : {'message': str}}
@@ -121,15 +133,10 @@ class GameConsumer(AsyncWebsocketConsumer):
         # event = {'type': 'player.next.turn', 'content': {...}}
         await self.send(text_data=json.dumps(event))
 
-    # async def player_status_joined(self, event):
-    #     # corresponds to the `player.status.joined` type
-    #     # event = {'type': 'player.status.joined', 'content': {'player_id': str, 'all_players': list[str]}}
-    #     await self.send(text_data=json.dumps(event))
-
-    # async def player_status_left(self, event):
-    #     # corresponds to the `player.status.joined` type
-    #     # event = {'type': 'player.status.left', 'content': {'player_id': str, 'all_players': list[str]}}
-    #     await self.send(text_data=json.dumps(event))
+    async def error(self, event):
+        # corresponds to the `error` type
+        # event = {'type': 'error', 'content': {'msg': str}}
+        await self.send(text_data=json.dumps(event))
 
     def finish_turn(self) -> str:
         """Finished the current player id turn and moves the turn to the next.

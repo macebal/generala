@@ -2,7 +2,13 @@ from collections import OrderedDict
 import random
 import re
 from typing import Self
-from pydantic import BaseModel, ValidationInfo, field_validator, Field, ConfigDict
+from pydantic import (
+    BaseModel,
+    ValidationInfo,
+    field_validator,
+    Field,
+    ConfigDict,
+)
 from enum import StrEnum
 from dataclasses import dataclass
 import json
@@ -27,7 +33,7 @@ PLAYS = {
 
 class GameStatus(StrEnum):
     PENDING: str = "pending"
-    STARTED: str = "started"
+    PLAYING: str = "playing"
     FINISHED: str = "finished"
 
 
@@ -113,11 +119,13 @@ class PlayerGameState(BaseModel):
 class GameState(BaseModel):
     model_config = ConfigDict(validate_assignment=True)
 
-    status: GameStatus = GameStatus.PENDING
     scores_per_player: dict[str, PlayerGameState] = Field(default_factory=OrderedDict)
     dies_values: list[int] = Field(default_factory=lambda: [1, 1, 1, 1, 1])
 
+    status: GameStatus = Field(GameStatus.PENDING, serialization_alias="status")
+
     @field_validator("dies_values")
+    @classmethod
     def validate_dies_number_and_values(cls, value) -> list[int]:
         if any(item < 1 or item > 6 for item in value):
             raise ValueError(f"All dice values have to be between 1 and 6: {value}")
@@ -154,6 +162,27 @@ class GameState(BaseModel):
 
         self.dies_values = new_dies
         return new_dies
+
+    def update_status(self, new_status: GameStatus) -> None:
+        current_status = self.status
+
+        if new_status == current_status:
+            return
+
+        match new_status:
+            case GameStatus.PENDING:
+                raise ValueError(
+                    f"Cannot update game status to PENDING once the game has started"
+                )
+            case GameStatus.PLAYING:
+                if current_status != GameStatus.PENDING:
+                    raise ValueError(
+                        f"Can only update game status to PLAYING from a PENDING state"
+                    )
+            case GameStatus.FINISHED:
+                pass  # Finished status can be set from any previous status
+
+        self.status = new_status
 
     @classmethod
     def from_json_string(cls, json_string) -> Self:

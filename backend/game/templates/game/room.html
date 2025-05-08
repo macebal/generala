@@ -16,6 +16,9 @@
     Player list
     <ul id="player-list"></ul>
     <p>It is player <em id="current-player-turn-id">foo</em>'s turn</p>
+    <input id="game-start" type="button" value="START GAME">
+    <input id="game-finish" type="button" value="FINISH GAME">
+    <p>Current game status <em id="game-status">waiting for players</em></p>
     <script>
         function getOrCreateUserId() {
             const storageKey = "user_id";
@@ -62,6 +65,9 @@
                     li.textContent = element;
                     document.querySelector('#player-list').appendChild(li);
                 });
+
+                const gameStatus = document.querySelector('#game-status')
+                gameStatus.innerHTML = content.status == "pending" ? "waiting for players" : content.status
             }
         };
     
@@ -100,6 +106,22 @@
             gameSocket.send(JSON.stringify({
                 'type': 'player.turn.finish',
                 'content': null
+            }));
+        };
+        document.querySelector('#game-start').onclick = function(e) {
+            gameSocket.send(JSON.stringify({
+                'type': 'game.status.change',
+                'content': {
+                    'newStatus': 'playing'
+                }
+            }));
+        };
+        document.querySelector('#game-finish').onclick = function(e) {
+            gameSocket.send(JSON.stringify({
+                'type': 'game.status.change',
+                'content': {
+                    'newStatus': 'finished'
+                }
             }));
         };
     </script>    
