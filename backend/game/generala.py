@@ -2,6 +2,7 @@ from collections import OrderedDict
 import random
 import re
 from typing import Self
+from game.decorators import requires_game_status
 from pydantic import (
     BaseModel,
     ValidationInfo,
@@ -9,8 +10,8 @@ from pydantic import (
     Field,
     ConfigDict,
 )
-from enum import StrEnum
 from dataclasses import dataclass
+from game.enums import GameStatus
 import json
 
 FIELD_NUMBER_REGEX = re.compile(r"^number_(?P<number>[1-6])$")
@@ -29,12 +30,6 @@ PLAYS = {
     "generala": Play(name="generala", value=50),
     "double_generala": Play(name="double_generala", value=100),
 }
-
-
-class GameStatus(StrEnum):
-    PENDING: str = "pending"
-    PLAYING: str = "playing"
-    FINISHED: str = "finished"
 
 
 class PlayerGameState(BaseModel):
@@ -139,6 +134,7 @@ class GameState(BaseModel):
     def player_ids(self) -> list[str]:
         return list(self.scores_per_player.keys())
 
+    # @requires_game_status(GameStatus.PENDING)
     def add_player(self, player_id: str) -> None:
         # if player_id in self.state:
         #     raise ValueError(f"Player {player_id} is already playing")

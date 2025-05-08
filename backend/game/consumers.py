@@ -87,12 +87,13 @@ class GameConsumer(AsyncWebsocketConsumer):
 
     async def handle_player_joined(self):
         async with redis_game_state(r, self.redis_key_game_state) as state:
-            state.add_player(self.player_id)
+            try:
+                state.add_player(self.player_id)
+                to_ret = {"type": "game.status", "content": state.model_dump_json()}
+            except Exception as e:
+                to_ret = {"type": "error", "content": {"msg": str(e)}}
 
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {"type": "game.status", "content": state.model_dump_json()},
-            )
+            await self.channel_layer.group_send(self.room_group_name, to_ret)
 
     async def handle_player_left(self):
         async with redis_game_state(r, self.redis_key_game_state) as state:
@@ -110,7 +111,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                 to_ret = {"type": "game.status", "content": state.model_dump_json()}
             except Exception as e:
                 to_ret = {"type": "error", "content": {"msg": str(e)}}
-            print(f"{to_ret=}")
+
             await self.channel_layer.group_send(self.room_group_name, to_ret)
 
     async def chat_message(self, event):
