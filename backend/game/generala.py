@@ -130,11 +130,15 @@ class GameState(BaseModel):
 
         return value
 
+    @classmethod
+    def from_json_string(cls, json_string) -> Self:
+        return cls(**json.loads(json_string))
+
     @property
     def player_ids(self) -> list[str]:
         return list(self.scores_per_player.keys())
 
-    # @requires_game_status(GameStatus.PENDING)
+    @requires_game_status(GameStatus.PENDING)
     def add_player(self, player_id: str) -> None:
         # if player_id in self.state:
         #     raise ValueError(f"Player {player_id} is already playing")
@@ -144,9 +148,11 @@ class GameState(BaseModel):
     def remove_player(self, player_id: str) -> None:
         self.scores_per_player.pop(player_id, {})
 
+    @requires_game_status(GameStatus.PLAYING)
     def score(self, player_id: str, play_name: str, play_value: int):
         setattr(self.scores_per_player[player_id], play_name, play_value)
 
+    @requires_game_status(GameStatus.PLAYING)
     def roll_dies(self, keeper_indices: list[int] | None = None) -> list[int]:
         keeper_indices = keeper_indices or []
         new_dies = []
@@ -179,7 +185,3 @@ class GameState(BaseModel):
                 pass  # Finished status can be set from any previous status
 
         self.status = new_status
-
-    @classmethod
-    def from_json_string(cls, json_string) -> Self:
-        return cls(**json.loads(json_string))

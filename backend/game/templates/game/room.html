@@ -10,7 +10,33 @@
     <input id="chat-message-input" type="text" size="100"><br>
     <input id="chat-message-submit" type="button" value="Send">
     {{ room_name|json_script:"room-name" }}
+    <br><br>
     <input id="dice-roll" type="button" value="Roll Dice">
+    <p>Current dies values <em id="dies-values"></em></p>
+    <br>
+    <div>
+        <select id="play-type">
+            <option value="">Select play type...</option>
+            <optgroup label="Numbers">
+                <option value="number_1">Number 1</option>
+                <option value="number_2">Number 2</option>
+                <option value="number_3">Number 3</option>
+                <option value="number_4">Number 4</option>
+                <option value="number_5">Number 5</option>
+                <option value="number_6">Number 6</option>
+            </optgroup>
+            <optgroup label="Special Plays">
+                <option value="straight">Straight</option>
+                <option value="full_house">Full House</option>
+                <option value="poker">Poker</option>
+                <option value="generala">Generala</option>
+                <option value="double_generala">Double Generala</option>
+            </optgroup>
+        </select>
+        <input id="play-score" type="number" placeholder="Score">
+        <input id="play-submit" type="button" value="Submit Play">
+    </div>
+    <br>
     <input id="finish-turn" type="button" value="Finish Turn">
     <br>
     Player list
@@ -68,6 +94,9 @@
 
                 const gameStatus = document.querySelector('#game-status')
                 gameStatus.innerHTML = content.status == "pending" ? "waiting for players" : content.status
+
+                const diesValues = document.querySelector('#dies-values')
+                diesValues.innerHTML = content.dies_values
             }
         };
     
@@ -121,6 +150,23 @@
                 'type': 'game.status.change',
                 'content': {
                     'newStatus': 'finished'
+                }
+            }));
+        };
+        document.querySelector('#play-submit').onclick = function(e) {
+            const playType = document.querySelector('#play-type').value;
+            const playScore = document.querySelector('#play-score').value;
+            
+            if (!playType || !playScore) {
+                alert('Please select a play type and enter a score');
+                return;
+            }
+
+            gameSocket.send(JSON.stringify({
+                'type': 'player.play.score',
+                'content': {
+                    'play': playType,
+                    'value': parseInt(playScore)
                 }
             }));
         };

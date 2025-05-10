@@ -45,7 +45,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             "chat.message": self.handle_chat_message,
             "dice.roll": self.handle_dice_roll,
             "player.turn.finish": self.handle_player_turn_finish,
-            "player.status.joined": self.handle_player_joined,
+            "player.play.score": self.handle_player_play_score,
             "game.status.change": self.handle_game_status_change,
         }
 
@@ -102,6 +102,18 @@ class GameConsumer(AsyncWebsocketConsumer):
                 self.room_group_name,
                 {"type": "game.status", "content": state.model_dump_json()},
             )
+
+    async def handle_player_play_score(self, event):
+        play_name = event.get("content", {}).get("play")
+        value = event.get("content", {}).get("value")
+        async with redis_game_state(r, self.redis_key_game_state) as state:
+            try:
+                state.score(self.player_id, play_name, value)
+                to_ret = {"type": "game.status", "content": state.model_dump_json()}
+            except Exception as e:
+                to_ret = {"type": "error", "content": {"msg": str(e)}}
+
+        await self.channel_layer.group_send(self.room_group_name, to_ret)
 
     async def handle_game_status_change(self, event):
         new_status = event.get("content", {}).get("newStatus")
