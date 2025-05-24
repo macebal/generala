@@ -9,9 +9,6 @@ r = redis.Redis(host="redis", port=6379, decode_responses=True)
 
 
 class GameConsumer(AsyncWebsocketConsumer):
-    player_ids = list()
-    current_player_index = 0
-
     async def connect(self):
         self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
         self.room_group_name = f"game_{self.room_name}"
@@ -44,7 +41,6 @@ class GameConsumer(AsyncWebsocketConsumer):
         handlers = {
             "chat.message": self.handle_chat_message,
             "dice.roll": self.handle_dice_roll,
-            "player.turn.finish": self.handle_player_turn_finish,
             "player.play.score": self.handle_player_play_score,
             "game.status.change": self.handle_game_status_change,
         }
@@ -68,22 +64,15 @@ class GameConsumer(AsyncWebsocketConsumer):
     async def handle_dice_roll(self, event):
         print(f"Dice rolled by {self.player_id}")
         async with redis_game_state(r, self.redis_key_game_state) as state:
+            if self.player_id != state.current_player_id:
+                raise ValueError(f"It is not player {self.player_id}'s turn.")
+
             keepers = event.get("content", {}).get("keepers", [])
             state.roll_dies(keeper_indices=keepers)
 
             event = {"type": "game.status", "content": state.model_dump_json()}
 
             await self.channel_layer.group_send(self.room_group_name, event)
-
-    async def handle_player_turn_finish(self, event):
-        print(f"Player {self.player_ids[self.current_player_index]} finished its turn")
-        next_player_id = self.finish_turn()
-        event = {
-            "type": "player.turn.next",
-            "content": {"player_id": next_player_id},
-        }
-
-        await self.channel_layer.group_send(self.room_group_name, event)
 
     async def handle_player_joined(self):
         async with redis_game_state(r, self.redis_key_game_state) as state:
@@ -108,7 +97,11 @@ class GameConsumer(AsyncWebsocketConsumer):
         value = event.get("content", {}).get("value")
         async with redis_game_state(r, self.redis_key_game_state) as state:
             try:
+                if self.player_id != state.current_player_id:
+                    raise ValueError(f"It is not player {self.player_id}'s turn.")
+
                 state.score(self.player_id, play_name, value)
+                state.finish_turn()
                 to_ret = {"type": "game.status", "content": state.model_dump_json()}
             except Exception as e:
                 to_ret = {"type": "error", "content": {"msg": str(e)}}
@@ -150,15 +143,6 @@ class GameConsumer(AsyncWebsocketConsumer):
         # corresponds to the `error` type
         # event = {'type': 'error', 'content': {'msg': str}}
         await self.send(text_data=json.dumps(event))
-
-    def finish_turn(self) -> str:
-        """Finished the current player id turn and moves the turn to the next.
-        Returns the player id whose turn is next.
-        """
-        self.current_player_index = (self.current_player_index + 1) % len(
-            self.player_ids
-        )
-        return self.player_ids[self.current_player_index]
 
     @property
     def redis_key_game_state(self) -> str:

@@ -37,8 +37,6 @@
         <input id="play-submit" type="button" value="Submit Play">
     </div>
     <br>
-    <input id="finish-turn" type="button" value="Finish Turn">
-    <br>
     Player list
     <ul id="player-list"></ul>
     <p>It is player <em id="current-player-turn-id">foo</em>'s turn</p>
@@ -97,6 +95,9 @@
 
                 const diesValues = document.querySelector('#dies-values')
                 diesValues.innerHTML = content.dies_values
+
+                const currentPlayer = document.querySelector('#current-player-turn-id')
+                currentPlayer.innerHTML = content.current_player_id
             }
         };
     
@@ -129,12 +130,6 @@
                 'content': {
                     'keepers': [4],
                 }
-            }));
-        };
-        document.querySelector('#finish-turn').onclick = function(e) {
-            gameSocket.send(JSON.stringify({
-                'type': 'player.turn.finish',
-                'content': null
             }));
         };
         document.querySelector('#game-start').onclick = function(e) {

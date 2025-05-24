@@ -1,7 +1,8 @@
 from collections import OrderedDict
+from itertools import cycle
 import random
 import re
-from typing import Self
+from typing import Iterable, Self
 from game.decorators import requires_game_status
 from pydantic import (
     BaseModel,
@@ -117,7 +118,9 @@ class GameState(BaseModel):
     scores_per_player: dict[str, PlayerGameState] = Field(default_factory=OrderedDict)
     dies_values: list[int] = Field(default_factory=lambda: [1, 1, 1, 1, 1])
 
-    status: GameStatus = Field(GameStatus.PENDING, serialization_alias="status")
+    status: GameStatus = Field(GameStatus.PENDING)
+    current_player_id: str | None = None
+    current_player_index: int | None = None
 
     @field_validator("dies_values")
     @classmethod
@@ -165,6 +168,13 @@ class GameState(BaseModel):
         self.dies_values = new_dies
         return new_dies
 
+    @requires_game_status(GameStatus.PLAYING)
+    def finish_turn(self) -> None:
+        self.current_player_index = (self.current_player_index + 1) % len(
+            self.player_ids
+        )
+        self.current_player_id = self.player_ids[self.current_player_index]
+
     def update_status(self, new_status: GameStatus) -> None:
         current_status = self.status
 
@@ -174,14 +184,22 @@ class GameState(BaseModel):
         match new_status:
             case GameStatus.PENDING:
                 raise ValueError(
-                    f"Cannot update game status to PENDING once the game has started"
+                    "Cannot update game status to PENDING once the game has started"
                 )
             case GameStatus.PLAYING:
                 if current_status != GameStatus.PENDING:
                     raise ValueError(
-                        f"Can only update game status to PLAYING from a PENDING state"
+                        "Can only update game status to PLAYING from a PENDING state"
                     )
+
+                if len(self.player_ids) == 1:
+                    raise ValueError("More than 1 player is needed to start the game")
+
+                self.current_player_index = 0
+                self.current_player_id = self.player_ids[0]
+
             case GameStatus.FINISHED:
-                pass  # Finished status can be set from any previous status
+                # Finished status can be set from any previous status
+                self.current_player = None
 
         self.status = new_status
