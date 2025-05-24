@@ -1,6 +1,7 @@
 import json
 import random
 from game.context_managers import redis_game_state
+from game.enums import GameStatus
 import redis
 from urllib.parse import parse_qs
 from channels.generic.websocket import AsyncWebsocketConsumer
@@ -102,6 +103,10 @@ class GameConsumer(AsyncWebsocketConsumer):
 
                 state.score(self.player_id, play_name, value)
                 state.finish_turn()
+
+                if state.has_game_ended():
+                    state.update_status(GameStatus.FINISHED)
+
                 to_ret = {"type": "game.status", "content": state.model_dump_json()}
             except Exception as e:
                 to_ret = {"type": "error", "content": {"msg": str(e)}}

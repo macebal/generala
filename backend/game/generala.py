@@ -111,6 +111,10 @@ class PlayerGameState(BaseModel):
             f"A value of {value} is not valid for the game of {info.field_name}"
         )
 
+    @property
+    def is_scoring_complete(self) -> bool:
+        return all(value is not None for _, value in self)
+
 
 class GameState(BaseModel):
     model_config = ConfigDict(validate_assignment=True)
@@ -200,6 +204,12 @@ class GameState(BaseModel):
 
             case GameStatus.FINISHED:
                 # Finished status can be set from any previous status
-                self.current_player = None
+                self.current_player_id = None
+                self.current_player_index = None
 
         self.status = new_status
+
+    def has_game_ended(self) -> bool:
+        return all(
+            score.is_scoring_complete for _, score in self.scores_per_player.items()
+        )
